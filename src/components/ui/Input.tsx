@@ -24,10 +24,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           id={inputId}
           className={cn(
-            'block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm',
+            'block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm transition-all duration-200',
             error
-              ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
-              : 'border-gray-300 focus:ring-medical-500 focus:border-medical-500',
+              ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500 bg-danger-50/50'
+              : 'border-gray-300 focus:ring-medical-500 focus:border-medical-500 hover:border-gray-400',
             className
           )}
           ref={ref}

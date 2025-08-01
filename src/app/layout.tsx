@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/layout/Navbar';
-import Sidebar from '@/components/layout/Sidebar';
-import Chatbot from '@/components/layout/Chatbot';
+import { AuthProvider } from '@/contexts/AuthContext';
+import AuthLayout from '@/components/layout/AuthLayout';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'MarroAI - Advanced Hematological Analysis Platform',
+  title: 'MarrowAI - Advanced Hematological Analysis Platform',
   description: 'AI-powered platform for detecting and managing aplastic anemia and bone marrow-related diseases',
   keywords: 'hematology, aplastic anemia, bone marrow, medical AI, blood disorders',
   authors: [{ name: 'MarrowAI Team' }],
@@ -22,18 +22,36 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <div className="flex">
-            <Sidebar />
-            <main className="flex-1 ml-64 pt-20 p-6">
-              <div className="max-w-7xl mx-auto">
-                {children}
-              </div>
-            </main>
-          </div>
-          <Chatbot />
-        </div>
+        <AuthProvider>
+          <AuthLayout>
+            {children}
+          </AuthLayout>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#ffffff',
+                color: '#374151',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#ffffff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#ffffff',
+                },
+              },
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
   );

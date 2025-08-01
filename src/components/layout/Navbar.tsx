@@ -11,12 +11,22 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { mockPatient } from '@/lib/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setShowProfile(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const notifications = [
     {
@@ -124,7 +134,7 @@ export default function Navbar() {
                   <User className="h-4 w-4 text-medical-600" />
                 </div>
                 <span className="hidden md:block text-sm font-medium text-gray-700">
-                  {mockPatient.name}
+                  {user?.displayName || user?.email}
                 </span>
               </button>
 
@@ -132,8 +142,8 @@ export default function Navbar() {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                   <div className="py-2">
                     <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="text-sm font-medium text-gray-900">{mockPatient.name}</p>
-                      <p className="text-xs text-gray-600">Patient ID: {mockPatient.id}</p>
+                      <p className="text-sm font-medium text-gray-900">{user?.displayName || 'User'}</p>
+                      <p className="text-xs text-gray-600">{user?.email}</p>
                     </div>
                     <Link
                       href="/profile"
@@ -149,7 +159,10 @@ export default function Navbar() {
                       <Settings className="h-4 w-4 mr-3" />
                       Settings
                     </Link>
-                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <button 
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
                       <LogOut className="h-4 w-4 mr-3" />
                       Sign out
                     </button>
