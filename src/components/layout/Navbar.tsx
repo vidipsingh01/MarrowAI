@@ -1,23 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Bell, 
   Search, 
   User, 
-  Settings, 
   LogOut,
   Menu,
   X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUI } from '@/context/UIContext';
 
 export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { searchTerm, setSearchTerm } = useUI();
+
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node) &&
+          bellButtonRef.current && !bellButtonRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      
+      if (profileRef.current && !profileRef.current.contains(event.target as Node) &&
+          userButtonRef.current && !userButtonRef.current.contains(event.target as Node)) {
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -58,7 +84,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gray-300 rounded-full rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-300 rounded-lg flex items-center justify-center">
                 <span className="text-black font-bold text-lg">M</span>
               </div>
               <span className="text-xl font-bold text-gray-900">MarrowAI</span>
@@ -73,7 +99,8 @@ export default function Navbar() {
               <input
                 type="text"
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-medical-500 focus:border-medical-500 sm:text-sm"
-                placeholder="Search reports, symptoms, or ask AI..."
+                placeholder="Search reports, symptoms..."
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
@@ -81,16 +108,17 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <button
+                ref={bellButtonRef}
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-danger-500"></span>
+                <span className="absolute top-1.5 right-2 block h-2 w-2 rounded-full bg-danger-500"></span>
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                  <div className="py-2">
+                <div ref={notificationsRef} className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                  <div className="">
                     <div className="px-4 py-2 border-b border-gray-200">
                       <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
                     </div>
@@ -113,12 +141,6 @@ export default function Navbar() {
                       ))}
                     </div>
                     <div className="px-4 py-2 border-t border-gray-200">
-                      <Link
-                        href="/notifications"
-                        className="text-sm text-medical-600 hover:text-medical-700 font-medium"
-                      >
-                        View all notifications
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -127,6 +149,7 @@ export default function Navbar() {
 
             <div className="relative">
               <button
+                ref={userButtonRef}
                 onClick={() => setShowProfile(!showProfile)}
                 className="flex items-center space-x-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -139,26 +162,12 @@ export default function Navbar() {
               </button>
 
               {showProfile && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                <div ref={profileRef} className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                   <div className="py-2">
                     <div className="px-4 py-2 border-b border-gray-200">
                       <p className="text-sm font-medium text-gray-900">{user?.displayName || 'User'}</p>
                       <p className="text-xs text-gray-600">{user?.email}</p>
                     </div>
-                    <Link
-                      href="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <User className="h-4 w-4 mr-3" />
-                      Profile
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <Settings className="h-4 w-4 mr-3" />
-                      Settings
-                    </Link>
                     <button 
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

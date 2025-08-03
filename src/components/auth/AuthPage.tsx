@@ -197,8 +197,9 @@ const AuthPage = () => {
                   <motion.div
                     className="absolute inset-y-1.5 bg-white/80 rounded-xl shadow-lg backdrop-blur-sm"
                     animate={{
-                      x: isLogin ? 4 : "calc(50% - 4px)",
+                      x: isLogin ? "0%" : "100%",
                       width: "calc(50% - 8px)",
+                      translateX: isLogin ? "4px" : "-4px",
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
@@ -339,29 +340,12 @@ const AuthPage = () => {
                     onClick={handleGoogleSignIn}
                     loading={loading}
                     size="lg"
-                    className="w-full py-3 text-base font-semibold rounded-2xl border-white/40 hover:border-white/60 bg-white/30 hover:bg-white/40 backdrop-blur-sm transition-all duration-200"
+                    className="w-full py-3 text-base font-semibold rounded-2xl border-white/40 hover:border-white/60 hover:bg-gray-200 bg-white/30  backdrop-blur-sm transition-all duration-200"
                   >
                     <Chrome className="w-5 h-5 mr-3" />
                     Continue with Google
                   </Button>
                 </motion.div>
-
-                {/* Footer */}
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                  className="text-center text-sm text-gray-600 mt-6 leading-relaxed"
-                >
-                  By {isLogin ? 'signing in' : 'creating an account'}, you agree to our{' '}
-                  <a href="#" className="text-medical-600 hover:text-medical-700 underline">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-medical-600 hover:text-medical-700 underline">
-                    Privacy Policy
-                  </a>
-                </motion.p>
               </div>
             </div>
           </motion.div>

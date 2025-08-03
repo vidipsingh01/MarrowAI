@@ -263,6 +263,16 @@ export const mockDashboardStats: DashboardStats = {
   bloodCountTrends: mockBloodCounts
 };
 
+export interface AnalyticsDataPoint {
+  id: string;
+  date: string;
+  riskScore: number;
+  riskLevel: 'low' | 'medium' | 'high';
+  bloodCounts: BloodCount | null;
+  symptoms: string[];
+  reportType: 'blood_test' | 'biopsy' | 'imaging' | 'genetic' | null;
+}
+
 // Mock Chat Messages
 export const mockChatMessages: ChatMessage[] = [
   {
@@ -419,6 +429,183 @@ export const mockPredictionResults = {
   }
 };
 
+export const mockAnalyticsData: AnalyticsDataPoint[] = [
+  {
+    id: 'analytics-001',
+    date: '2024-01-01',
+    riskScore: 75,
+    riskLevel: 'high',
+    bloodCounts: {
+      id: 'bc-1',
+      date: '2024-01-01',
+      wbc: 3.5,
+      rbc: 4.0,
+      hemoglobin: 9.0,
+      hematocrit: 27.5,
+      platelets: 95,
+      neutrophils: 48,
+      lymphocytes: 32,
+      monocytes: 9,
+      eosinophils: 2,
+      basophils: 1
+    },
+    symptoms: ['fatigue', 'easy_bruising'],
+    reportType: null
+  },
+  {
+    id: 'analytics-002',
+    date: '2024-01-15',
+    riskScore: 82,
+    riskLevel: 'high',
+    bloodCounts: mockBloodCounts[0],
+    symptoms: ['fatigue', 'easy_bruising', 'shortness_of_breath'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-003',
+    date: '2024-01-28',
+    riskScore: 87,
+    riskLevel: 'high',
+    bloodCounts: null,
+    symptoms: ['fatigue', 'easy_bruising', 'petechiae'],
+    reportType: 'biopsy'
+  },
+  {
+    id: 'analytics-004',
+    date: '2024-02-01',
+    riskScore: 85,
+    riskLevel: 'high',
+    bloodCounts: mockBloodCounts[1],
+    symptoms: ['fatigue', 'easy_bruising', 'frequent_infections'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-005',
+    date: '2024-02-15',
+    riskScore: 87,
+    riskLevel: 'high',
+    bloodCounts: mockBloodCounts[2],
+    symptoms: ['fatigue', 'easy_bruising', 'shortness_of_breath', 'petechiae'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-006',
+    date: '2024-02-28',
+    riskScore: 78,
+    riskLevel: 'high',
+    bloodCounts: {
+      id: 'bc-4',
+      date: '2024-02-28',
+      wbc: 3.1,
+      rbc: 3.4,
+      hemoglobin: 7.5,
+      hematocrit: 22.8,
+      platelets: 80,
+      neutrophils: 40,
+      lymphocytes: 35,
+      monocytes: 10,
+      eosinophils: 2,
+      basophils: 1
+    },
+    symptoms: ['fatigue', 'easy_bruising'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-007',
+    date: '2024-03-15',
+    riskScore: 70,
+    riskLevel: 'medium',
+    bloodCounts: null,
+    symptoms: ['fatigue', 'shortness_of_breath'],
+    reportType: 'imaging'
+  },
+  {
+    id: 'analytics-008',
+    date: '2024-03-30',
+    riskScore: 65,
+    riskLevel: 'medium',
+    bloodCounts: {
+      id: 'bc-5',
+      date: '2024-03-30',
+      wbc: 3.8,
+      rbc: 3.9,
+      hemoglobin: 8.2,
+      hematocrit: 25.1,
+      platelets: 105,
+      neutrophils: 52,
+      lymphocytes: 30,
+      monocytes: 10,
+      eosinophils: 5,
+      basophils: 1
+    },
+    symptoms: ['fatigue'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-009',
+    date: '2024-04-10',
+    riskScore: 60,
+    riskLevel: 'medium',
+    bloodCounts: null,
+    symptoms: [],
+    reportType: null
+  },
+  {
+    id: 'analytics-010',
+    date: '2024-04-25',
+    riskScore: 55,
+    riskLevel: 'medium',
+    bloodCounts: {
+      id: 'bc-6',
+      date: '2024-04-25',
+      wbc: 4.1,
+      rbc: 4.2,
+      hemoglobin: 9.5,
+      hematocrit: 28.9,
+      platelets: 120,
+      neutrophils: 55,
+      lymphocytes: 28,
+      monocytes: 11,
+      eosinophils: 4,
+      basophils: 2
+    },
+    symptoms: ['fatigue'],
+    reportType: 'blood_test'
+  },
+  {
+    id: 'analytics-011',
+    date: '2024-05-10',
+    riskScore: 45,
+    riskLevel: 'low',
+    bloodCounts: null,
+    symptoms: [],
+    reportType: null
+  },
+  {
+    id: 'analytics-012',
+    date: '2024-05-25',
+    riskScore: 40,
+    riskLevel: 'low',
+    bloodCounts: {
+      id: 'bc-7',
+      date: '2024-05-25',
+      wbc: 4.5,
+      rbc: 4.5,
+      hemoglobin: 11.0,
+      hematocrit: 33.5,
+      platelets: 155,
+      neutrophils: 58,
+      lymphocytes: 25,
+      monocytes: 10,
+      eosinophils: 5,
+      basophils: 2
+    },
+    symptoms: [],
+    reportType: 'blood_test'
+  },
+];
+
+
 // Export all mock data
 export const mockData = {
   bloodCounts: mockBloodCounts,
@@ -429,5 +616,6 @@ export const mockData = {
   dashboardStats: mockDashboardStats,
   chatMessages: mockChatMessages,
   symptoms: commonSymptoms,
-  predictions: mockPredictionResults
+  predictions: mockPredictionResults,
+  analyticsData: mockAnalyticsData,
 };

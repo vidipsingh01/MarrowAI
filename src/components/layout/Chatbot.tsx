@@ -124,7 +124,7 @@ export default function Chatbot() {
           aria-label="Open chat assistant"
         >
           <MessageCircle className="h-6 w-6" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-success-500 rounded-full animate-pulse"></span>
+          <span className="absolute top-1 -right-1 w-3 h-3 bg-success-500 rounded-full animate-pulse"></span>
         </button>
       )}
 
