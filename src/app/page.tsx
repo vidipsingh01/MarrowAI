@@ -71,7 +71,7 @@ export default function HomePage(): JSX.Element {
       {/* The main container is now a flex column that centers its children */}
       <main className="flex flex-col items-center w-full">
         {/* This inner div controls the max-width and padding of the content */}
-        <div className="container px-4 py-12 w-full">
+        <div className="container px-4 pt-10 w-full">
           <div className="space-y-12 animate-fade-in">
             
             {stats.highRiskAlerts > 0 && (
@@ -79,7 +79,7 @@ export default function HomePage(): JSX.Element {
                 <div className="flex items-center">
                   <AlertTriangle className="h-6 w-6 text-destructive mr-4" />
                   <div>
-                    <h3 className="font-serif font-bold text-destructive">
+                    <h3 className="font-bold text-destructive">
                       High Risk Alert
                     </h3>
                     <p className="text-sm text-destructive/90">
@@ -99,7 +99,7 @@ export default function HomePage(): JSX.Element {
                   <div className="p-3 rounded-full bg-primary/10"><FileText className="h-6 w-6 text-primary" /></div>
                   <div className="ml-4">
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Reports</p>
-                    <p className="text-3xl font-serif font-bold text-foreground">{stats.totalReports}</p>
+                    <p className="text-3xl font-bold text-foreground">{stats.totalReports}</p>
                   </div>
                 </div>
               </Card>
@@ -108,7 +108,7 @@ export default function HomePage(): JSX.Element {
                   <div className="p-3 rounded-full bg-warning/10"><Clock className="h-6 w-6 text-warning" /></div>
                   <div className="ml-4">
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pending Analysis</p>
-                    <p className="text-3xl font-serif font-bold text-foreground">{stats.pendingAnalysis}</p>
+                    <p className="text-3xl font-bold text-foreground">{stats.pendingAnalysis}</p>
                   </div>
                 </div>
               </Card>
@@ -117,7 +117,7 @@ export default function HomePage(): JSX.Element {
                   <div className="p-3 rounded-full bg-destructive/10"><AlertTriangle className="h-6 w-6 text-destructive" /></div>
                   <div className="ml-4">
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">High Risk</p>
-                    <p className="text-3xl font-serif font-bold text-destructive">{stats.highRiskAlerts}</p>
+                    <p className="text-3xl font-bold text-destructive">{stats.highRiskAlerts}</p>
                   </div>
                 </div>
               </Card>
@@ -217,7 +217,7 @@ export default function HomePage(): JSX.Element {
                </div>
              </Card>
 
-            <div className="text-center text-sm text-muted-foreground py-8">
+            <div className="text-center text-sm text-muted-foreground py-4">
               <p>
                 MarrowAI is an assistant tool. Always consult with qualified medical professionals for diagnosis and treatment.
               </p>

@@ -12,10 +12,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
     
     const variants = {
-      primary: 'bg-medical-600 text-white hover:bg-medical-700 focus:ring-medical-500',
+      primary: 'bg-medical-600 text-black hover:bg-medical-700 focus:ring-medical-500',
       secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
       danger: 'bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500',
-      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-medical-500',
+      outline: 'border border-gray-300 bg-white text-black hover:bg-gray-50 focus:ring-medical-500',
       ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-medical-500'
     };
 

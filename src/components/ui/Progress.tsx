@@ -14,10 +14,10 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
     
     const colors = {
-      primary: 'bg-medical-600',
-      success: 'bg-success-600',
-      warning: 'bg-warning-600',
-      danger: 'bg-danger-600'
+      primary: 'bg-green-600',
+      success: 'bg-green-500',
+      warning: 'bg-yellow-500',
+      danger: 'bg-red-600'
     };
 
     const sizes = {

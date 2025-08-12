@@ -51,29 +51,7 @@ export default function RiskAssessmentPage() {
         </div>
       </div>
 
-      <Card className="p-8">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-danger-100 rounded-full mb-6">
-            <AlertTriangle className="h-12 w-12 text-danger-600" />
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-2">
-            {mockRiskAssessment.score}/100
-          </h2>
-          <Badge className={`${getRiskBadgeColor(mockRiskAssessment.riskLevel)} text-xl px-6 py-3 mb-4`}>
-            {mockRiskAssessment.riskLevel.toUpperCase()} RISK
-          </Badge>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            Based on your current symptoms, blood counts, and medical history, our AI analysis 
-            indicates a high risk for severe aplastic anemia requiring immediate medical attention.
-          </p>
-          <Progress 
-            value={mockRiskAssessment.score} 
-            color="danger" 
-            className="max-w-md mx-auto"
-            showValue
-          />
-        </div>
-      </Card>
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="p-6">
@@ -102,54 +80,6 @@ export default function RiskAssessmentPage() {
         </Card>
       </div>
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Detailed Risk Analysis</h3>
-        <div className="space-y-4">
-          {mockRiskAssessment.factors.map((factor, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-900">{factor.factor}</h4>
-                <div className="flex items-center space-x-2">
-                  <Badge className={getRiskBadgeColor(factor.severity)}>
-                    {factor.severity}
-                  </Badge>
-                  <span className="text-sm text-gray-600">{factor.impact}% impact</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">{factor.description}</p>
-              <Progress value={factor.impact} color="danger" size="sm" />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">AI Recommendations</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium text-gray-900 mb-4">Immediate Actions</h4>
-            <div className="space-y-3">
-              {mockRiskAssessment.recommendations.slice(0, 3).map((rec, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-danger-50 rounded-lg">
-                  <div className="w-2 h-2 bg-danger-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-900">{rec}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-900 mb-4">Long-term Management</h4>
-            <div className="space-y-3">
-              {mockRiskAssessment.recommendations.slice(3).map((rec, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-medical-50 rounded-lg">
-                  <div className="w-2 h-2 bg-medical-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-900">{rec}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

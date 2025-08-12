@@ -76,12 +76,12 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button size="sm">
+          <Button size="sm" className='bg-gray-200 hover:bg-gray-300'>
             <Download className="h-4 w-4 mr-2" />
             Download All
           </Button>
           <Link href="/upload">
-            <Button size="sm">
+            <Button size="sm" className='bg-gray-200 hover:bg-gray-300'>
               <FileText className="h-4 w-4 mr-2" />
               Upload New Report
             </Button>
@@ -113,6 +113,7 @@ export default function ReportsPage() {
                 variant={filterType === type.value ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setFilterType(type.value)}
+                className='hover:bg-gray-200 bg-gray-200'
               >
                 {type.label}
               </Button>

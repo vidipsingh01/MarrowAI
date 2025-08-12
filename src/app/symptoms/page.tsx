@@ -171,7 +171,7 @@ export default function SymptomsPage() {
         <div className="flex items-center justify-between">
           <div className={`flex items-center ${currentStep >= 1 ? 'text-medical-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-              currentStep >= 1 ? 'border-medical-600 bg-medical-600 text-white' : 'border-gray-300'
+              currentStep >= 1 ? 'border-gray-600 bg-gray-600 text-white' : 'border-gray-300'
             }`}>
               1
             </div>
@@ -180,7 +180,7 @@ export default function SymptomsPage() {
           <div className={`w-16 h-1 ${currentStep >= 2 ? 'bg-medical-600' : 'bg-gray-300'}`}></div>
           <div className={`flex items-center ${currentStep >= 2 ? 'text-medical-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-              currentStep >= 2 ? 'border-medical-600 bg-medical-600 text-white' : 'border-gray-300'
+              currentStep >= 2 ? 'border-gray-600 bg-gray-600 text-white' : 'border-gray-300'
             }`}>
               2
             </div>
@@ -189,7 +189,7 @@ export default function SymptomsPage() {
           <div className={`w-16 h-1 ${currentStep >= 3 ? 'bg-medical-600' : 'bg-gray-300'}`}></div>
           <div className={`flex items-center ${currentStep >= 3 ? 'text-medical-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-              currentStep >= 3 ? 'border-medical-600 bg-medical-600 text-white' : 'border-gray-300'
+              currentStep >= 3 ? 'border-gray-600 bg-gray-600 text-white' : 'border-gray-300'
             }`}>
               3
             </div>
@@ -203,7 +203,7 @@ export default function SymptomsPage() {
           {symptomCategories.map((category, categoryIndex) => {
             const IconComponent = category.icon;
             return (
-              <Card key={categoryIndex} className="p-6">
+              <Card key={categoryIndex} className="p-6 ">
                 <div className="flex items-center mb-4">
                   <div className="p-2 bg-medical-100 rounded-lg mr-3">
                     <IconComponent className="h-5 w-5 text-medical-600" />
@@ -217,7 +217,7 @@ export default function SymptomsPage() {
                       <button
                         key={symptom.id}
                         onClick={() => toggleSymptom(symptom.id)}
-                        className={`p-4 rounded-lg border-2 text-left transition-all ${
+                        className={`p-4 rounded-lg border-2 text-left transition-all hover:bg-gray-100 ${
                           selected
                             ? 'border-medical-500 bg-medical-50'
                             : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -247,7 +247,7 @@ export default function SymptomsPage() {
             <Button
               onClick={() => setCurrentStep(2)}
               disabled={selectedSymptoms.length === 0}
-              className="min-w-32"
+              className="min-w-32 text-white border bg-blue-500 hover:bg-blue-600"
             >
               Next: Add Details
             </Button>
@@ -333,12 +333,13 @@ export default function SymptomsPage() {
             <Button
               variant="outline"
               onClick={() => setCurrentStep(1)}
+              className='hover:bg-gray-200'
             >
               Back: Edit Symptoms
             </Button>
             <Button
               onClick={generateRiskAssessment}
-              className="min-w-32"
+              className="min-w-32 border bg-blue-500 hover:bg-blue-600"
             >
               Generate Assessment
             </Button>
@@ -514,19 +515,16 @@ export default function SymptomsPage() {
             <Button 
               onClick={resetAssessment}
               variant="outline"
-              className="min-w-40"
+              className="min-w-40 hover:bg-gray-200"
             >
               Start New Assessment
             </Button>
             <Button 
               onClick={() => window.print()}
               variant="outline"
-              className="min-w-40"
+              className="min-w-40 hover:bg-gray-200"
             >
               Print Results
-            </Button>
-            <Button className="min-w-40">
-              Save to Dashboard
             </Button>
           </div>
         </div>

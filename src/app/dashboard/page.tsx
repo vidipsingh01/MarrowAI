@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   AlertTriangle,
@@ -18,13 +18,29 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Progress from '@/components/ui/Progress';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { mockDashboardStats, mockBloodCounts, mockPatient, mockReports, mockRiskAssessment } from '@/lib/mockData';
 import { formatDate, getRiskBadgeColor, formatNumber } from '@/lib/utils';
+import { mockData } from '@/lib/mockData';
 
 export default function DashboardPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState('3months');
-  const [stats, setStats] = useState(mockDashboardStats);
+  const [selectedPeriod, setSelectedPeriod] = useState('6months');
+    const [stats, setStats] = useState(mockDashboardStats);
+  const allAnalyticsData = mockData.analyticsData;
+
+  const filteredData = useMemo(() => {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (selectedPeriod) {
+        case 'all':
+        default:
+          startDate = new Date(0);
+          break;
+      }
+      
+      return allAnalyticsData.filter(d => new Date(d.date) >= startDate);
+    }, [selectedPeriod, allAnalyticsData]);
 
   const bloodCountTrendData = mockBloodCounts.map(count => ({
     date: formatDate(count.date),
@@ -46,7 +62,78 @@ export default function DashboardPage() {
     return { color: 'success', label: 'Normal' };
   };
 
+
   const alertLevel = getAlertLevel(stats.highRiskAlerts);
+
+  const aggregatedStats = useMemo(() => {
+    if (filteredData.length === 0) {
+      return {
+        avgRiskScore: 0,
+        highRiskDays: 0,
+        totalReports: 0,
+        symptomCount: 0,
+        latestBloodCounts: null,
+      };
+    }
+    
+    const totalScore = filteredData.reduce((sum, d) => sum + d.riskScore, 0);
+    const highRiskDays = filteredData.filter(d => d.riskScore >= 70).length;
+    const totalReports = filteredData.filter(d => d.reportType).length;
+    const symptomCount = filteredData.reduce((sum, d) => sum + d.symptoms.length, 0);
+    const latestEntry = filteredData[filteredData.length - 1];
+
+    return {
+      avgRiskScore: Math.round(totalScore / filteredData.length),
+      highRiskDays,
+      totalReports,
+      symptomCount,
+      latestBloodCounts: latestEntry.bloodCounts,
+    };
+  }, [filteredData]);
+
+  // Data for charts
+  const riskTrendData = filteredData.map(d => ({
+    date: formatDate(d.date),
+    'Risk Score': d.riskScore,
+  }));
+
+  const bloodCountComparisonData = aggregatedStats.latestBloodCounts ? [
+    { name: 'WBC', value: aggregatedStats.latestBloodCounts.wbc, normalMin: 4, normalMax: 11, unit: 'x10³/μL' },
+    { name: 'RBC', value: aggregatedStats.latestBloodCounts.rbc, normalMin: 4.5, normalMax: 5.9, unit: 'x10⁶/μL' },
+    { name: 'Hemoglobin', value: aggregatedStats.latestBloodCounts.hemoglobin, normalMin: 12, normalMax: 16, unit: 'g/dL' },
+    { name: 'Platelets', value: aggregatedStats.latestBloodCounts.platelets / 100, normalMin: 150, normalMax: 450, unit: 'x10³/μL' },
+  ] : [];
+
+  const symptomFrequencyMap = filteredData.reduce((acc, d) => {
+    d.symptoms.forEach(s => {
+      acc.set(s, (acc.get(s) || 0) + 1);
+    });
+    return acc;
+  }, new Map<string, number>());
+  const symptomFrequencyData = Array.from(symptomFrequencyMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5); // Show top 5
+
+  const reportTypeDistributionMap = filteredData.reduce((acc, d) => {
+    if (d.reportType) {
+      acc.set(d.reportType, (acc.get(d.reportType) || 0) + 1);
+    }
+    return acc;
+  }, new Map<string, number>());
+  const reportTypeDistributionData = Array.from(reportTypeDistributionMap.entries())
+    .map(([name, value]) => ({ name, value, color: getColorForReportType(name) }));
+
+  const COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6'];
+  function getColorForReportType(type: string): string {
+    switch(type) {
+      case 'blood_test': return '#ef4444'; // red
+      case 'biopsy': return '#f59e0b'; // amber
+      case 'imaging': return '#22c55e'; // green
+      case 'genetic': return '#3b82f6'; // blue
+      default: return '#6b7280'; // gray
+    }
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -58,41 +145,12 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className=' hover:bg-gray-200'>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
-          <Button size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Schedule Appointment
-          </Button>
         </div>
       </div>
-
-      {stats.highRiskAlerts > 0 && (
-        <Card className="border-l-4 border-danger-500 bg-danger-50">
-          <div className="p-4">
-            <div className="flex items-center">
-              <AlertTriangle className="h-6 w-6 text-danger-600 mr-3" />
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-danger-900">Critical Alerts Require Attention</h3>
-                <p className="text-danger-700 mt-1">
-                  You have {stats.highRiskAlerts} high-risk findings that need immediate medical attention.
-                  Your latest blood counts show severe pancytopenia consistent with your aplastic anemia diagnosis.
-                </p>
-                <div className="mt-3 flex space-x-3">
-                  <Link href="/risk-assessment">
-                    <Button variant="danger" size="sm">View Risk Assessment</Button>
-                  </Link>
-                  <Link href="/reports">
-                    <Button variant="outline" size="sm">View Reports</Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="p-6">
@@ -171,70 +229,13 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Blood Count Trends</h3>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-medical-500"
-            >
-              <option value="1month">Last Month</option>
-              <option value="3months">Last 3 Months</option>
-              <option value="6months">Last 6 Months</option>
-            </select>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={bloodCountTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="WBC" stroke="#ef4444" strokeWidth={2} name="WBC (×10³/μL)" />
-                <Line type="monotone" dataKey="Hemoglobin" stroke="#f59e0b" strokeWidth={2} name="Hemoglobin (g/dL)" />
-                <Line type="monotone" dataKey="Platelets" stroke="#3b82f6" strokeWidth={2} name="Platelets (×10⁴/μL)" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 text-sm text-gray-600">
-            <p>* Red lines indicate values below normal range</p>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Risk Factor Impact</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={riskFactorData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="impact" fill="#ef4444" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 space-y-2">
-            {mockRiskAssessment.factors.map((factor, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">{factor.factor}</span>
-                <Badge className={getRiskBadgeColor(factor.severity)}>
-                  {factor.severity}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Recent Reports</h3>
             <Link href="/reports">
-              <Button variant="outline" size="sm">View All</Button>
+              <Button variant="outline" size="sm" className='hover:bg-gray-200'>View All</Button>
             </Link>
           </div>
           <div className="space-y-4">
@@ -259,7 +260,7 @@ export default function DashboardPage() {
                   >
                     {report.status}
                   </Badge>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className='hover:bg-gray-200 p-2'>
                     <Eye className="h-4 w-4" />
                   </Button>
                 </div>
@@ -272,29 +273,92 @@ export default function DashboardPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-6">AI Recommendations</h3>
           <div className="space-y-4">
             {mockRiskAssessment.recommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-medical-50 rounded-lg">
-                <div className="w-2 h-2 bg-medical-600 rounded-full mt-2"></div>
+              <div key={index} className="flex items-start space-x-3 p-3 bg-gray-100 rounded-lg">
+                <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-900">{recommendation}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <Link href="/risk-assessment">
-              <Button className="w-full">
-                View Detailed Risk Assessment
-              </Button>
-            </Link>
+        </Card>
+      </div>
+
+      <Card className="p-8">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-danger-100 rounded-full mb-6">
+            <AlertTriangle className="h-12 w-12 text-danger-600" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 mb-2">
+            {mockRiskAssessment.score}/100
+          </h2>
+          <Badge className={`${getRiskBadgeColor(mockRiskAssessment.riskLevel)} text-xl px-6 py-3 mb-4`}>
+            {mockRiskAssessment.riskLevel.toUpperCase()} RISK
+          </Badge>
+          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+            Based on your current symptoms, blood counts, and medical history, our AI analysis 
+            indicates a high risk for severe aplastic anemia requiring immediate medical attention.
+          </p>
+          <Progress 
+            value={mockRiskAssessment.score} 
+            color="danger" 
+            className="max-w-md mx-auto"
+            showValue
+          />
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Top 5 Reported Symptoms</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={symptomFrequencyData} layout="vertical" margin={{ left: 100 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="name" width={100} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#f59e0b" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 text-sm text-gray-600">
+            <p className="text-xs text-gray-500">*Frequency of reported symptoms in the selected period.</p>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Report Type Distribution</h3>
+          <div className="h-80 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={reportTypeDistributionData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {reportTypeDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </Card>
       </div>
+
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link href="/upload">
-            <Button variant="outline" className="w-full justify-start h-auto p-4">
+            <Button variant="outline" className="w-full justify-start h-auto p-4 hover:bg-gray-200">
               <FileText className="h-5 w-5 mr-3" />
               <div className="text-left">
                 <div className="font-medium">Upload New Report</div>
@@ -303,7 +367,7 @@ export default function DashboardPage() {
             </Button>
           </Link>
           <Link href="/symptoms">
-            <Button variant="outline" className="w-full justify-start h-auto p-4">
+            <Button variant="outline" className="w-full justify-start h-auto p-4 hover:bg-gray-200">
               <Activity className="h-5 w-5 mr-3" />
               <div className="text-left">
                 <div className="font-medium">Symptom Checker</div>
@@ -312,7 +376,7 @@ export default function DashboardPage() {
             </Button>
           </Link>
           <Link href="/analytics">
-            <Button variant="outline" className="w-full justify-start h-auto p-4">
+            <Button variant="outline" className="w-full justify-start h-auto p-4 hover:bg-gray-200">
               <TrendingUp className="h-5 w-5 mr-3" />
               <div className="text-left">
                 <div className="font-medium">View Analytics</div>

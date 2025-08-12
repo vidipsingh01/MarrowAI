@@ -108,47 +108,6 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <button
-                ref={bellButtonRef}
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-2 block h-2 w-2 rounded-full bg-danger-500"></span>
-              </button>
-
-              {showNotifications && (
-                <div ref={notificationsRef} className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                  <div className="">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {notifications.map((notification) => (
-                        <div key={notification.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                              <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                              <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                            </div>
-                            <div className={`w-2 h-2 rounded-full mt-2 ml-2 ${
-                              notification.type === 'alert' ? 'bg-danger-500' :
-                              notification.type === 'info' ? 'bg-medical-500' :
-                              'bg-warning-500'
-                            }`}></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="px-4 py-2 border-t border-gray-200">
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
                 ref={userButtonRef}
                 onClick={() => setShowProfile(!showProfile)}
                 className="flex items-center space-x-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

@@ -31,14 +31,6 @@ const faqs = [
     answer: 'We use industry-standard encryption and security protocols to protect your data. All reports and personal information are stored securely and are only accessible by you and authorized healthcare providers. We do not share your data without your explicit consent.',
   },
   {
-    question: 'Can I connect with a doctor through the platform?',
-    answer: 'While our platform provides powerful AI analysis, it is not a substitute for professional medical advice. You can use the **Schedule Follow-up** feature to book an appointment with your healthcare provider, but all consultations take place offline.',
-  },
-  {
-    question: 'Why are my blood count trends not showing up?',
-    answer: 'For the trend charts to be populated, you need to upload at least two reports that contain blood count data (like a CBC) over a period of time. Ensure your reports are successfully processed by the system.',
-  },
-  {
     question: 'What is Aplastic Anemia?',
     answer: 'Aplastic Anemia is a rare and serious blood disorder where the body stops producing enough new blood cells. This can lead to a range of symptoms, including fatigue (due to a low red blood cell count), frequent infections (due to a low white blood cell count), and easy bruising or bleeding (due to a low platelet count).',
   },
@@ -53,10 +45,6 @@ const faqs = [
   {
     question: 'How accurate are the AI predictions?',
     answer: 'Our AI is trained on a vast dataset of medical literature and patient data to provide a highly accurate analysis. However, it is a clinical support tool, not a diagnostic one. The predictions should always be reviewed and confirmed by a qualified healthcare professional who can consider your complete medical history and physical examination.',
-  },
-  {
-    question: 'Can I provide feedback on the platform?',
-    answer: 'Yes! We highly value your feedback. You can send us your comments, suggestions, or bug reports via email to our support team. Your input helps us improve the platform for everyone.',
   },
 ];
 

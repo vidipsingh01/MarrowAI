@@ -161,25 +161,6 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Type</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {fileTypes.map(type => (
-            <button
-              key={type.value}
-              onClick={() => setSelectedFileType(type.value)}
-              className={`p-3 text-sm font-medium rounded-lg border transition-colors ${
-                selectedFileType === type.value
-                  ? 'bg-medical-100 border-medical-300 text-medical-900'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {type.label}
-            </button>
-          ))}
-        </div>
-      </Card>
-
       <Card className="p-8">
         <div
           {...getRootProps()}

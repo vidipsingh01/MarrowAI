@@ -58,9 +58,9 @@
   }
 
   /* Set the default heading font to the vintage serif style */
-  h1, h2, h3, h4, h5, h6 {
+  /* h1, h2, h3, h4, h5, h6 {
     @apply font-serif text-accent;
-  }
+  } */
 }
 
 /* 4. Define custom component styles and utilities */
