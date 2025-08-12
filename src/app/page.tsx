@@ -2,324 +2,229 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Activity, 
-  FileText, 
-  AlertTriangle, 
-  TrendingUp, 
-  Users, 
+import type { LucideProps } from 'lucide-react'; // Import types for icons
+import Hero from '@/components/Hero';
+import {
+  Activity,
+  FileText,
+  AlertTriangle,
+  TrendingUp,
   Clock,
   Upload,
   Search,
   Brain,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { mockDashboardStats, mockBloodCounts } from '@/lib/mockData';
 import { formatDate, getRiskBadgeColor } from '@/lib/utils';
+// Correctly import the types from your types file
+import type { DashboardStats, BloodCount, TimelineEvent } from '@/lib/types';
 
-export default function HomePage() {
-  const [stats, setStats] = useState(mockDashboardStats);
-  const [isLoading, setIsLoading] = useState(true);
+// Define the type for a Quick Action item
+interface QuickAction {
+  title: string;
+  description: string;
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>;
+  href: string;
+  color: string;
+}
+
+export default function HomePage(): JSX.Element {
+  // Use the DashboardStats type for the state
+  const [stats, setStats] = useState<DashboardStats>(mockDashboardStats);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
-  const quickActions = [
-    {
-      title: 'Upload Report',
-      description: 'Upload CBC, biopsy, or imaging files',
-      icon: Upload,
-      href: '/upload',
-      color: 'bg-medical-500'
-    },
-    {
-      title: 'Symptom Check',
-      description: 'Check symptoms and get risk assessment',
-      icon: Search,
-      href: '/symptoms',
-      color: 'bg-warning-500'
-    },
-    {
-      title: 'AI Analysis',
-      description: 'Get AI-powered risk stratification',
-      icon: Brain,
-      href: '/risk-assessment',
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'View Analytics',
-      description: 'Explore trends and visualizations',
-      icon: BarChart3,
-      href: '/analytics',
-      color: 'bg-success-500'
-    }
+  // Strongly type the quickActions array
+  const quickActions: QuickAction[] = [
+    { title: 'Upload Report', description: 'Upload CBC, biopsy, or imaging files', icon: Upload, href: '/upload', color: 'bg-primary' },
+    { title: 'Symptom Check', description: 'Check symptoms and get risk assessment', icon: Search, href: '/symptoms', color: 'bg-warning' },
+    { title: 'AI Analysis', description: 'Get AI-powered risk stratification', icon: Brain, href: '/risk-assessment', color: 'bg-accent' },
+    { title: 'View Analytics', description: 'Explore trends and visualizations', icon: BarChart3, href: '/analytics', color: 'bg-success' },
   ];
 
-  const recentTrends = mockBloodCounts.slice(-3).map(count => ({
-    date: count.date,
-    wbc: count.wbc,
-    hemoglobin: count.hemoglobin,
-    platelets: count.platelets
-  }));
+  // No longer needed, as we will use stats.bloodCountTrends directly
+  // const recentTrends: BloodCount[] = mockBloodCounts.slice(-3);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="loading-spinner mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading MarrowAI...</p>
+          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-foreground/80 font-serif">Loading MarrowAI...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Welcome to <span className="text-medical-600">MarrowAI</span>
-        </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Advanced AI-powered platform for detecting and managing aplastic anemia 
-          and bone marrow-related diseases. Get instant analysis, risk assessment, 
-          and personalized recommendations.
-        </p>
-      </div>
+    <>
+      <Hero /> {/* Make sure your Hero component uses the font-serif for its main title! */}
+      {/* The main container is now a flex column that centers its children */}
+      <main className="flex flex-col items-center w-full">
+        {/* This inner div controls the max-width and padding of the content */}
+        <div className="container px-4 py-12 w-full">
+          <div className="space-y-12 animate-fade-in">
+            
+            {stats.highRiskAlerts > 0 && (
+              <div className="bg-destructive/10 border-l-4 border-destructive rounded-r-lg p-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-6 w-6 text-destructive mr-4" />
+                  <div>
+                    <h3 className="font-serif font-bold text-destructive">
+                      High Risk Alert
+                    </h3>
+                    <p className="text-sm text-destructive/90">
+                      You have {stats.highRiskAlerts} high-risk findings that require attention.
+                      <Link href="/dashboard" className="ml-2 font-bold underline hover:no-underline">
+                        View Details
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-      {stats.highRiskAlerts > 0 && (
-        <div className="bg-danger-50 border border-danger-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-danger-600 mr-3" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-primary/10"><FileText className="h-6 w-6 text-primary" /></div>
+                  <div className="ml-4">
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Reports</p>
+                    <p className="text-3xl font-serif font-bold text-foreground">{stats.totalReports}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-warning/10"><Clock className="h-6 w-6 text-warning" /></div>
+                  <div className="ml-4">
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pending Analysis</p>
+                    <p className="text-3xl font-serif font-bold text-foreground">{stats.pendingAnalysis}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-destructive/10"><AlertTriangle className="h-6 w-6 text-destructive" /></div>
+                  <div className="ml-4">
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">High Risk</p>
+                    <p className="text-3xl font-serif font-bold text-destructive">{stats.highRiskAlerts}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-success/10"><TrendingUp className="h-6 w-6 text-success" /></div>
+                  <div className="ml-4">
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Last Update</p>
+                    <p className="text-lg font-bold text-foreground">{formatDate(stats.lastUpdate)}</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
             <div>
-              <h3 className="text-sm font-medium text-danger-800">
-                High Risk Alert
-              </h3>
-              <p className="text-sm text-danger-700">
-                You have {stats.highRiskAlerts} high-risk findings that require immediate attention.
-                <Link href="/dashboard" className="ml-2 underline hover:no-underline">
-                  View Details
-                </Link>
+              <h2 className="text-3xl font-bold mb-2 text-center">Quick Actions</h2>
+              <div className="w-24 h-1 bg-primary mb-6 mx-auto"></div> {/* Centered decorative underline */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {quickActions.map((action) => (
+                  <Link key={action.title} href={action.href} className="group block">
+                    <Card className="p-6 h-full border border-muted hover:border-primary hover:shadow-lg transition-all duration-300 text-center">
+                      <div className={`inline-flex p-3 rounded-lg ${action.color} mb-4`}>
+                        <action.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-accent mb-2 group-hover:text-primary transition-colors">
+                        {action.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm">{action.description}</p>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <Card className="lg:col-span-3 p-6 border border-muted">
+                <h3 className="text-2xl font-bold text-accent mb-4 text-center">Recent Activity</h3>
+                <div className="space-y-4">
+                  {stats.recentActivity.map((event: TimelineEvent) => (
+                    <div key={event.id} className="flex items-start space-x-3">
+                      <div className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full bg-accent"></div>
+                      <div className="flex-1">
+                        <p className="font-bold text-foreground">{event.title}</p>
+                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{formatDate(event.date)}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="lg:col-span-2 p-6 border border-muted">
+                <h3 className="text-2xl font-bold text-accent mb-4 text-center">Latest Counts</h3>
+                <div className="space-y-4">
+                  {/* UPDATED: Now mapping over stats.bloodCountTrends from the DashboardStats type */}
+                  {stats.bloodCountTrends.slice(-3).map((trend: BloodCount) => {
+                    const isAbnormal = trend.wbc < 4.0 || trend.hemoglobin < 12.0 || trend.platelets < 150;
+                    return(
+                    <div key={trend.id} className={`border-l-4 p-3 ${isAbnormal ? 'border-destructive/50' : 'border-success/50'}`}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-bold text-foreground">{formatDate(trend.date)}</span>
+                        <Badge className={isAbnormal ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}>
+                           {isAbnormal ? 'Abnormal' : 'Normal'}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-sm text-center">
+                        <p className={trend.wbc < 4.0 ? 'text-destructive' : 'text-foreground'}>WBC: <span className="font-bold">{trend.wbc}</span></p>
+                        <p className={trend.hemoglobin < 12.0 ? 'text-destructive' : 'text-foreground'}>Hgb: <span className="font-bold">{trend.hemoglobin}</span></p>
+                        <p className={trend.platelets < 150 ? 'text-destructive' : 'text-foreground'}>PLT: <span className="font-bold">{trend.platelets}</span></p>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+
+            <Card className="p-8 bg-card border-2 border-primary/20">
+               <div className="text-center">
+                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                   <Activity className="h-8 w-8 text-primary" />
+                 </div>
+                 <h3 className="text-3xl font-bold text-accent mb-2">
+                   Understanding Your Health
+                 </h3>
+                 <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                   Aplastic anemia is a condition where your bone marrow doesn't make enough new blood cells. Early detection is crucial. Use our tools to track your health, but always consult a professional.
+                 </p>
+                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                   <Link href="/symptoms" className="inline-flex items-center justify-center px-6 py-3 border border-primary text-base font-bold rounded-md text-primary bg-card hover:bg-primary/10 transition-colors">
+                     Check Symptoms
+                   </Link>
+                   <Link href="/upload" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-md text-primary-foreground bg-primary hover:bg-accent transition-colors">
+                     Upload Report
+                   </Link>
+                 </div>
+               </div>
+             </Card>
+
+            <div className="text-center text-sm text-muted-foreground py-8">
+              <p>
+                MarrowAI is an assistant tool. Always consult with qualified medical professionals for diagnosis and treatment.
               </p>
             </div>
           </div>
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-medical-100">
-              <FileText className="h-6 w-6 text-medical-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Reports</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalReports}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-warning-100">
-              <Clock className="h-6 w-6 text-warning-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Analysis</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pendingAnalysis}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-danger-100">
-              <AlertTriangle className="h-6 w-6 text-danger-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">High Risk Alerts</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.highRiskAlerts}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-success-100">
-              <TrendingUp className="h-6 w-6 text-success-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Last Update</p>
-              <p className="text-sm font-bold text-gray-900">
-                {formatDate(stats.lastUpdate)}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickActions.map((action, index) => {
-            const IconComponent = action.icon;
-            return (
-              <Link
-                key={index}
-                href={action.href}
-                className="group block"
-              >
-                <Card className="p-6 h-full hover:shadow-lg transition-shadow duration-200">
-                  <div className={`inline-flex p-3 rounded-lg ${action.color} mb-4`}>
-                    <IconComponent className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-medical-600 transition-colors">
-                    {action.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    {action.description}
-                  </p>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {stats.recentActivity.map((event, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
-                  event.severity === 'high' ? 'bg-danger-500' :
-                  event.severity === 'medium' ? 'bg-warning-500' :
-                  'bg-success-500'
-                }`}></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                  <p className="text-sm text-gray-600 truncate">{event.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">{formatDate(event.date)}</p>
-                </div>
-                {event.severity && (
-                  <Badge className={getRiskBadgeColor(event.severity)}>
-                    {event.severity}
-                  </Badge>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <Link
-              href="/history"
-              className="text-sm text-medical-600 hover:text-medical-700 font-medium"
-            >
-              View all activity →
-            </Link>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Latest Blood Counts</h3>
-          <div className="space-y-4">
-            {recentTrends.map((trend, index) => (
-              <div key={index} className="border-l-4 border-medical-200 pl-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-900">
-                    {formatDate(trend.date)}
-                  </span>
-                  <Badge className={
-                    trend.wbc < 4.0 || trend.hemoglobin < 12.0 || trend.platelets < 150
-                      ? 'bg-danger-100 text-danger-800 border-danger-200'
-                      : 'bg-success-100 text-success-800 border-success-200'
-                  }>
-                    {trend.wbc < 4.0 || trend.hemoglobin < 12.0 || trend.platelets < 150
-                      ? 'Abnormal' : 'Normal'}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">WBC:</span>
-                    <span className={`ml-1 font-medium ${
-                      trend.wbc < 4.0 ? 'text-danger-600' : 'text-gray-900'
-                    }`}>
-                      {trend.wbc}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Hgb:</span>
-                    <span className={`ml-1 font-medium ${
-                      trend.hemoglobin < 12.0 ? 'text-danger-600' : 'text-gray-900'
-                    }`}>
-                      {trend.hemoglobin}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">PLT:</span>
-                    <span className={`ml-1 font-medium ${
-                      trend.platelets < 150 ? 'text-danger-600' : 'text-gray-900'
-                    }`}>
-                      {trend.platelets}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <Link
-              href="/analytics"
-              className="text-sm text-medical-600 hover:text-medical-700 font-medium"
-            >
-              View detailed trends →
-            </Link>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="p-8 bg-gradient-to-r from-medical-50 to-blue-50 border-medical-200">
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-medical-100 rounded-full flex items-center justify-center mb-4">
-            <Activity className="h-8 w-8 text-medical-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Understanding Aplastic Anemia
-          </h3>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Aplastic anemia is a rare but serious blood disorder where your bone marrow 
-            doesn&apos;t make enough new blood cells. Early detection and proper management 
-            are crucial for better outcomes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/symptoms"
-              className="inline-flex items-center px-6 py-3 border border-medical-300 text-base font-medium rounded-md text-medical-700 bg-white hover:bg-medical-50 transition-colors"
-            >
-              Check Symptoms
-            </Link>
-            <Link
-              href="/upload"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-medical-600 hover:bg-medical-700 transition-colors"
-            >
-              Upload Report
-            </Link>
-          </div>
-        </div>
-      </Card>
-
-      <div className="text-center text-sm text-gray-500 py-8">
-        <p>
-          MarrowAI is designed to assist healthcare professionals in the analysis of hematological conditions.
-          Always consult with qualified medical professionals for diagnosis and treatment decisions.
-        </p>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
