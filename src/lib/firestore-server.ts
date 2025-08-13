@@ -1,4 +1,3 @@
-// lib/firestore-server.ts - Enhanced with debugging
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
@@ -16,7 +15,6 @@ export interface ReportData {
   notes?: string;
 }
 
-// Initialize Admin SDK for server-side operations
 let adminDb: any = null;
 
 function initializeFirebaseAdmin() {
@@ -26,29 +24,13 @@ function initializeFirebaseAdmin() {
   }
   
   console.log('Initializing Firebase Admin SDK...');
-  
-  // Check environment variables
-  const requiredEnvVars = {
-    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-    FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
-    FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY
-  };
-  
-  console.log('Environment variables check:');
-  Object.entries(requiredEnvVars).forEach(([key, value]) => {
-    console.log(`${key}: ${value ? 'SET' : 'MISSING'}`);
-    if (key === 'FIREBASE_PRIVATE_KEY' && value) {
-      console.log(`${key} length: ${value.length} characters`);
-      console.log(`${key} starts with: ${value.substring(0, 50)}...`);
-    }
-  });
-  
-  const missingVars = Object.entries(requiredEnvVars)
-    .filter(([_, value]) => !value)
-    .map(([key, _]) => key);
-    
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+
+  // Check environment variable for service account credentials
+  const serviceAccountPath = process.env.FIREBASE_ADMIN_CREDENTIALS;
+  console.log('FIREBASE_ADMIN_CREDENTIALS:', serviceAccountPath ? 'SET' : 'NOT SET');
+
+  if (!serviceAccountPath) {
+    throw new Error('Missing FIREBASE_ADMIN_CREDENTIALS environment variable');
   }
   
   try {
@@ -57,17 +39,11 @@ function initializeFirebaseAdmin() {
     
     if (getApps().length === 0) {
       console.log('No existing apps found, initializing new admin app...');
-      
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      console.log('Private key processed, length:', privateKey?.length);
-      
+      console.log('Loading service account from:', serviceAccountPath);
+
       const adminApp = initializeApp({
-        credential: cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: privateKey,
-        }),
-        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com/`,
+        credential: cert(serviceAccountPath),
+        databaseURL: `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com/`,
       }, 'admin');
       
       console.log('Admin app initialized:', adminApp.name);
@@ -84,124 +60,59 @@ function initializeFirebaseAdmin() {
     return adminDb;
   } catch (error) {
     console.error('Failed to initialize Firebase Admin SDK:', error);
+    throw error;
   }
 }
 
 export class ServerMedicalReportService {
-  private static COLLECTION_NAME = 'medicalReports';
-
-  // Server-side save using Admin SDK (for API routes)
-  static async saveMedicalReport(reportData: ReportData): Promise<string> {
+  static async saveMedicalReport(data: ReportData) {
     console.log('=== Starting ServerMedicalReportService.saveMedicalReport ===');
-    console.log('Input data:', {
-      userId: reportData.userId,
-      fileName: reportData.fileName,
-      reportType: reportData.reportType,
-      textLength: reportData.textLength,
-      hasNotes: !!reportData.notes
-    });
+    console.log('Input data:', JSON.stringify({
+      userId: data.userId,
+      fileName: data.fileName,
+      reportType: data.reportType,
+      textLength: data.textLength,
+      hasNotes: !!data.notes,
+    }, null, 2));
 
-    let db;
     try {
-      db = initializeFirebaseAdmin();
+      console.log('Preparing to initialize Firebase Admin SDK...');
+      const db = initializeFirebaseAdmin();
       console.log('Admin SDK initialized successfully');
-    } catch (initError) {
-      console.error('Admin SDK initialization failed:', initError);
-      throw initError;
-    }
-    
-    if (!db) {
-      const error = new Error('Firebase Admin SDK not initialized. Database instance is null.');
-      console.error(error.message);
-      throw error;
-    }
 
-    try {
       const docData = {
-        ...reportData,
-        uploadDate: new Date(),
-        lastModified: new Date(),
-        aiAnalyzed: false
+        userId: data.userId,
+        fileName: data.fileName,
+        fileSize: data.fileSize,
+        extractedText: data.extractedText,
+        textLength: data.textLength,
+        pdfInfo: data.pdfInfo,
+        reportType: data.reportType,
+        uploadDate: new Date().toISOString(),
+        notes: data.notes || null,
       };
 
-      console.log('Prepared document data:', {
-        userId: docData.userId,
-        fileName: docData.fileName,
-        reportType: docData.reportType,
-        uploadDate: docData.uploadDate.toISOString(),
-        textLength: docData.textLength
-      });
+      console.log('Prepared document data:', JSON.stringify(docData, null, 2));
+      console.log('Attempting to add document to collection: medicalReports');
 
-      console.log('Attempting to add document to collection:', this.COLLECTION_NAME);
-      const docRef = await db.collection(this.COLLECTION_NAME).add(docData);
-      console.log('Document successfully saved with ID:', docRef.id);
-      
-      return docRef.id;
-    } catch (error: unknown) { // Catch the error as 'unknown'
-    console.error('Firestore operation failed:', error);
+      const docRef = await db.collection('medicalReports').add(docData);
+      console.log('Document added successfully with ID:', docRef.id);
 
-    // Now, use a type guard to safely access properties
-    if (error instanceof Error) {
-        // Since Firebase errors are extensions of Error, we can check for the 'code' property
-        // to get more specific details.
-        const firestoreError = error as Error & { code?: string };
-
-        console.error('Firestore error details:', {
-            name: firestoreError.name,
-            message: firestoreError.message,
-            code: firestoreError.code || 'N/A', // Safely access the code property
-            stack: firestoreError.stack
-        });
-
-        if (firestoreError.code === 'permission-denied') {
-            throw new Error('Permission denied: Check your Firestore security rules and service account permissions in Google Cloud IAM.');
-        } else if (firestoreError.code === 'not-found') {
-            throw new Error('Firestore database not found: Check your project configuration.');
-        } else if (firestoreError.message?.includes('service account')) {
-            throw new Error('Service account authentication failed: Check your Firebase credentials in .env.local.');
-        }
-        
-        throw new Error(`Firestore operation failed: ${firestoreError.message}`);
-
-      } else {
-          // Handle cases where the thrown error is not a standard Error object
-          console.error('An unexpected error type was caught:', error);
-          throw new Error(`An unexpected error occurred: ${String(error)}`);
-      }
-    }
-  }
-  
-    static async updateMedicalReport(reportId: string, updates: any): Promise<void> {
-    const db = initializeFirebaseAdmin();
-    
-    try {
-      await db.collection(this.COLLECTION_NAME).doc(reportId).update({
-        ...updates,
-        lastModified: new Date()
-      });
-      console.log('Document updated successfully:', reportId);
-    } catch (error: unknown) {
-      console.error('Error updating medical report:', error);
-      throw new Error(`Failed to update medical report: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  // Test connection method
-  static async testConnection(): Promise<boolean> {
-    try {
-      console.log('Testing Firebase Admin SDK connection...');
-      const db = initializeFirebaseAdmin();
-      
-      // Try to perform a simple operation
-      const testDoc = db.collection('_test').doc('connection-test');
-      await testDoc.set({ test: true, timestamp: new Date() });
-      await testDoc.delete();
-      
-      console.log('Firebase Admin SDK connection test passed');
-      return true;
+      return { id: docRef.id, ...docData };
     } catch (error) {
-      console.error('Firebase Admin SDK connection test failed:', error);
-      return false;
+      console.error('Firestore operation failed:', error);
+      if (typeof error === 'object' && error !== null) {
+        console.error('Firestore error details:', JSON.stringify({
+          name: (error as any).name,
+          message: (error as any).message,
+          code: (error as any).code,
+          stack: (error as any).stack,
+        }, null, 2));
+        throw new Error(`Firestore operation failed: ${(error as any).message}`);
+      } else {
+        console.error('Firestore error details:', error);
+        throw new Error('Firestore operation failed: Unknown error');
+      }
     }
   }
 }
