@@ -1,4 +1,4 @@
-// src/app/upload/page.tsx - Updated to use client-side service
+// src/app/upload/page.tsx - Fixed uploadDate handling
 'use client';
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -22,14 +22,17 @@ import {
 // Dummy components (replace with your actual UI components)
 const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => 
   <div className={`bg-white shadow-md rounded-lg ${className}`}>{children}</div>;
+
 const Button = ({ children, variant, className, ...props }: { 
   children: React.ReactNode, variant?: string, className?: string, [key: string]: any 
 }) => 
   <button className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${className}`} {...props}>
     {children}
   </button>;
+
 const Input = ({ className, ...props }: { className?: string, [key: string]: any }) =>
   <input className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props} />;
+
 const Select = ({ children, className, ...props }: { children: React.ReactNode, className?: string, [key: string]: any }) =>
   <select className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props}>
     {children}
@@ -37,6 +40,45 @@ const Select = ({ children, className, ...props }: { children: React.ReactNode, 
 
 const formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`;
 const getFileType = (name: string) => name.split('.').pop()?.toUpperCase() || '';
+
+// Helper function to safely format dates
+const formatUploadDate = (uploadDate: any): string => {
+  try {
+    // If it's already a Date object
+    if (uploadDate instanceof Date) {
+      return uploadDate.toLocaleDateString();
+    }
+    
+    // If it's a Firestore Timestamp with toDate method
+    if (uploadDate && typeof uploadDate.toDate === 'function') {
+      return uploadDate.toDate().toLocaleDateString();
+    }
+    
+    // If it's a Firestore Timestamp with seconds property
+    if (uploadDate && typeof uploadDate.seconds === 'number') {
+      return new Date(uploadDate.seconds * 1000).toLocaleDateString();
+    }
+    
+    // If it's a string that can be parsed as a date
+    if (typeof uploadDate === 'string') {
+      const date = new Date(uploadDate);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString();
+      }
+    }
+    
+    // If it's a number (timestamp)
+    if (typeof uploadDate === 'number') {
+      return new Date(uploadDate).toLocaleDateString();
+    }
+    
+    // Fallback
+    return 'Unknown date';
+  } catch (error) {
+    console.error('Error formatting upload date:', error, uploadDate);
+    return 'Invalid date';
+  }
+};
 
 interface UploadedFile {
   id: string;
@@ -448,7 +490,7 @@ export default function UploadPage() {
                       </div>
                       
                       <div className="text-sm text-gray-500 mb-2">
-                        <span>Uploaded: {report.uploadDate?.toDate().toLocaleDateString()}</span>
+                        <span>Uploaded: {formatUploadDate(report.uploadDate)}</span>
                         <span className="mx-2">•</span>
                         <span>{formatFileSize(report.fileSize)}</span>
                         <span className="mx-2">•</span>
@@ -456,11 +498,13 @@ export default function UploadPage() {
                         <span className="mx-2">•</span>
                         <span>{report.textLength.toLocaleString()} characters</span>
                       </div>
+
                       {report.notes && (
                         <div className="text-sm text-gray-600 mb-2 italic">
                           Notes: {report.notes}
                         </div>
                       )}
+
                       {report.aiInsights && (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                           <h4 className="font-medium text-blue-900 mb-2">AI Insights</h4>
@@ -489,6 +533,7 @@ export default function UploadPage() {
                           )}
                         </div>
                       )}
+
                       <div className="text-xs text-gray-400 mt-2 max-h-16 overflow-hidden">
                         <strong>Preview:</strong> {report.extractedText.substring(0, 150)}
                         {report.extractedText.length > 150 && '...'}
