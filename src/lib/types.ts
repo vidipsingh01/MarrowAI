@@ -2,15 +2,8 @@ export interface BloodCount {
   id: string;
   date: string;
   wbc: number; // White Blood Cells (×10³/μL)
-  rbc: number; // Red Blood Cells (×10⁶/μL)
   hemoglobin: number; // g/dL
-  hematocrit: number; // %
   platelets: number; // ×10³/μL
-  neutrophils: number; // %
-  lymphocytes: number; // %
-  monocytes: number; // %
-  eosinophils: number; // %
-  basophils: number; // %
 }
 
 export interface PatientData {
@@ -65,15 +58,30 @@ export interface SymptomReport {
 
 export interface MedicalReport {
   id: string;
-  patientId: string;
-  type: 'cbc' | 'biopsy' | 'imaging' | 'genetic' | 'other';
-  title: string;
-  date: string;
+  userId: string;
   fileName: string;
   fileSize: number;
-  status: 'pending' | 'processing' | 'completed' | 'error';
-  results?: PredictionResult;
-  uploadedAt: string;
+  uploadDate: string;
+  reportType: string;
+  notes?: string;
+  extractedText: string;
+  textLength: number;
+  pdfInfo: {
+    numPages: number;
+    version?: string;
+  };
+  aiAnalyzed?: boolean;
+  aiInsights?: {
+    riskScore: number;
+    riskLevel: RiskLevel;
+    wbc: number;
+    hemoglobin: number;
+    platelets: number;
+    recommendations?: string[];
+    summary?: string;
+    keyFindings?: string[];
+  };
+  fileUrl?: string;
 }
 
 export interface PredictionResult {
@@ -120,7 +128,6 @@ export interface DashboardStats {
   bloodCountTrends: BloodCount[];
 }
 
-// Disease-specific types
 export interface AplasticAnemiaMarkers {
   reticulocyteCount: number; // %
   ironLevel: number; // μg/dL
@@ -144,7 +151,6 @@ export interface BoneMarrowBiopsy {
   prognosis: string;
 }
 
-// API Response Types
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -159,7 +165,6 @@ export interface UploadResponse {
   estimatedProcessingTime?: number; // minutes
 }
 
-// Form Types
 export interface SymptomFormData {
   symptoms: string[];
   severity: { [symptom: string]: number };

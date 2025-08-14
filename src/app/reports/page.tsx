@@ -17,9 +17,6 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function ReportsPage() {
   const { reports, isLoading, formatDate, loading, error, deleteReport } = useReportsManager();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [mockData] = useState({ reports: [] }); // Mock data removed as we're using real data
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<string | null>(null);
 
@@ -52,6 +49,9 @@ export default function ReportsPage() {
     setReportToDelete(null);
   };
 
+  // Filter reports to show only AI-analyzed ones
+  const aiAnalyzedReports = reports.filter(report => report.aiAnalyzed);
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
@@ -78,9 +78,9 @@ export default function ReportsPage() {
           <Card className="p-6 text-center text-gray-500">
             <h3 className="text-xl font-semibold mb-2">Loading Reports...</h3>
           </Card>
-        ) : reports.length > 0 ? (
-          reports.map((report) => {
-            const IconComponent = getReportIcon(report.reportType);
+        ) : aiAnalyzedReports.length > 0 ? (
+          aiAnalyzedReports.map((report) => {
+            const IconComponent = getReportIcon(report.reportType || 'default');
 
             return (
               <Card key={report.id} className="p-6">
@@ -124,9 +124,9 @@ export default function ReportsPage() {
           })
         ) : (
           <Card className="p-6 text-center text-gray-500">
-            <h3 className="text-xl font-semibold mb-2">No Reports Found</h3>
+            <h3 className="text-xl font-semibold mb-2">No AI-Analyzed Reports Found</h3>
             <p>
-              We couldn&apos;t find any reports matching your search criteria. Try a different search term or upload a new report.
+              We couldn&apos;t find any AI-analyzed reports. Upload and analyze a new report to get started.
             </p>
           </Card>
         )}
@@ -135,7 +135,7 @@ export default function ReportsPage() {
       {/* Information Panel */}
       <Card className="p-6 border-l-4 border-medical-500 bg-medical-50">
         <div className="flex items-start space-x-4">
-          <FileText className="h-6 w-6 text-medical-600 mt-1" />
+          <FileText className="h-6 w-6 text-medical-500 mt-1" />
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">About Your Reports</h3>
             <p className="text-sm text-gray-600">

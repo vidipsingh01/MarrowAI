@@ -1,8 +1,13 @@
 // src/app/upload/hooks/useMedicalReportManager.ts
 import { useState, useCallback, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { MedicalReportService, MedicalReport } from '@/lib/firestore-client';
+import { auth, db } from '@/lib/firebase';
+import { 
+  MedicalReportService, 
+  MedicalReport,
+  AnalyzedReportData 
+} from '@/lib/firestore-client';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 interface UploadedFile {
   id: string;
@@ -29,7 +34,6 @@ const REPORT_TYPES = [
 ];
 
 export const useMedicalReportManager = () => {
-  console.log('useMedicalReportManager hook initialized');
   const [user, loading, error] = useAuthState(auth);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [savedReports, setSavedReports] = useState<MedicalReport[]>([]);
@@ -39,55 +43,70 @@ export const useMedicalReportManager = () => {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
 
   useEffect(() => {
-    console.log('User state changed:', user ? user.uid : 'No user');
     if (user) {
       loadSavedReports();
     } else {
       setSavedReports([]);
-      console.log('No user logged in, clearing saved reports.');
     }
   }, [user]);
 
   const loadSavedReports = async () => {
     if (!user) return;
-    console.trace(`Attempting to load reports for user: ${user.uid}`);
     setIsLoadingReports(true);
     try {
-      console.log('Before calling getUserMedicalReports...');
       const reports = await MedicalReportService.getUserMedicalReports(user.uid);
-      console.log('After getUserMedicalReports, received:', reports);
       if (!Array.isArray(reports)) {
         console.error('Unexpected response from getUserMedicalReports:', reports);
         setSavedReports([]);
         return;
       }
-      console.log(`Successfully fetched ${reports.length} reports:`, reports);
+      // Log reports to debug
+      console.log('Loaded reports:', reports);
       setSavedReports(reports);
     } catch (error) {
       console.error('Error in loadSavedReports:', error);
       setSavedReports([]);
     } finally {
-      console.log('Finished loading reports, isLoadingReports set to false.');
       setIsLoadingReports(false);
     }
+  };
+
+  const analyzeWithGemini = async (extractedText: string): Promise<AnalyzedReportData> => {
+    if (!extractedText) {
+      throw new Error('No extracted text provided for analysis');
+    }
+    console.log('Sending text to analyze:', extractedText.substring(0, 100) + '...');
+    const response = await fetch('/api/analyze-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: extractedText }),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API response error:', errorText);
+      throw new Error('Failed to analyze with Gemini');
+    }
+    const { data } = await response.json();
+    return {
+      riskScore: data.riskScore || 0,
+      riskLevel: data.riskLevel || 'low',
+      wbc: data.wbc || 0,
+      hemoglobin: data.hemoglobin || 0,
+      platelets: data.platelets || 0,
+      recommendations: data.recommendations || [],
+    };
   };
 
   const processFile = async (uploadedFile: UploadedFile) => {
     if (!user) {
       setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id
-            ? { ...f, status: 'error', error: 'Please log in to upload files' }
-            : f
-        )
+        prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'error', error: 'Please log in to upload files' } : f)
       );
       return;
     }
 
-    console.log(`Starting to process file: ${uploadedFile.file.name}`);
-
     setUploadedFiles(prev =>
-      prev.map(f => (f.id === uploadedFile.id ? { ...f, status: 'uploading' } : f))
+      prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'uploading' } : f)
     );
 
     const formData = new FormData();
@@ -99,72 +118,65 @@ export const useMedicalReportManager = () => {
     }
 
     try {
-      console.log('Sending request to API...');
-      const response = await fetch('/api/parse-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      console.log('Response received, status:', response.status);
-
-      setUploadedFiles(prev =>
-        prev.map(f => (f.id === uploadedFile.id ? { ...f, status: 'processing' } : f))
-      );
-
+      const response = await fetch('/api/parse-pdf', { method: 'POST', body: formData });
       const data = await response.json();
-      console.log('Response data:', data);
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
 
-      console.log(`--- Extracted text for ${uploadedFile.file.name} ---`);
-      console.log(data.text);
-      console.log(`--- End of extracted text (${data.info?.textLength} characters) ---`);
+      const analyzedData = await analyzeWithGemini(data.text);
+      const reportsCollection = collection(db, 'medicalReports');
+      const reportRef = doc(reportsCollection); // Generate a new document reference
+      const reportId = reportRef.id;
+      const reportData: MedicalReport = {
+        id: reportId,
+        userId: user.uid,
+        fileName: uploadedFile.file.name,
+        fileSize: uploadedFile.file.size,
+        uploadDate: new Date().toISOString(),
+        reportType: uploadedFile.reportType || reportType,
+        notes: uploadedFile.notes || notes,
+        extractedText: data.text,
+        aiAnalyzed: true,
+        aiInsights: {
+          riskScore: analyzedData.riskScore,
+          riskLevel: analyzedData.riskLevel,
+          wbc: analyzedData.wbc,
+          hemoglobin: analyzedData.hemoglobin,
+          platelets: analyzedData.platelets,
+          recommendations: analyzedData.recommendations,
+        },
+        pdfInfo: data.info,
+      };
 
+      await setDoc(reportRef, reportData); // Use the reference for setDoc
       setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id
-            ? {
-                ...f,
-                status: 'completed',
-                extractedText: data.text,
-                reportId: data.reportId,
-              }
-            : f
-        )
+        prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'completed', extractedText: data.text, reportId } : f)
       );
-
       await loadSavedReports();
       setNotes('');
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Upload failed:', error);
       setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id
-            ? { ...f, status: 'error', error: (error as Error).message || 'Unknown error' }
-            : f
-        )
+        prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'error', error: (error as Error).message || 'Unknown error' } : f)
       );
     }
   };
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      console.log('Files dropped:', acceptedFiles);
-
-      // Check if the user already has a saved report or an active upload
-      if (savedReports.length >= 1 || uploadedFiles.length >= 1) {
-        alert('You can only upload one file at a time. Please remove the existing file or delete a saved report before uploading a new one.');
-        return;
-      }
+      // if (savedReports.length >= 1 || uploadedFiles.length >= 1) {
+      //   alert('You can only upload one file at a time. Please remove the existing file or delete a saved report before uploading a new one.');
+      //   return;
+      // }
 
       const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
         id: Math.random().toString(36).substr(2, 9),
         file,
         status: 'pending',
-        reportType: reportType,
-        notes: notes,
+        reportType,
+        notes,
       }));
 
       setUploadedFiles(prev => [...prev, ...newFiles]);
@@ -173,17 +185,8 @@ export const useMedicalReportManager = () => {
         if (file.file.type === 'application/pdf') {
           processFile(file);
         } else {
-          console.error(`Invalid file type: ${file.file.type}`);
           setUploadedFiles(prev =>
-            prev.map(f =>
-              f.id === file.id
-                ? {
-                    ...f,
-                    status: 'error',
-                    error: `Invalid file type: ${file.file.type}. Only PDF files are supported.`,
-                  }
-                : f
-            )
+            prev.map(f => f.id === file.id ? { ...f, status: 'error', error: `Invalid file type: ${file.file.type}. Only PDF files are supported.` } : f)
           );
         }
       });
@@ -197,9 +200,7 @@ export const useMedicalReportManager = () => {
 
   const deleteReport = async (reportId: string) => {
     try {
-      console.log(`Attempting to delete report with ID: ${reportId}`);
       await MedicalReportService.deleteMedicalReport(reportId);
-      console.log(`Report with ID ${reportId} deleted successfully.`);
       await loadSavedReports();
     } catch (error) {
       console.error('Failed to delete report:', error);
@@ -215,14 +216,11 @@ export const useMedicalReportManager = () => {
 
     setIsLoadingReports(true);
     try {
-      console.log(`Searching reports for user ${user.uid} with term: "${searchTerm}"`);
       const results = await MedicalReportService.searchReports(user.uid, searchTerm);
-      console.log(`Search results: ${results.length} reports found.`, results);
       setSavedReports(results);
     } catch (error) {
       console.error('Search failed:', error);
     } finally {
-      console.log('Search completed, isLoadingReports set to false.');
       setIsLoadingReports(false);
     }
   };
@@ -231,19 +229,7 @@ export const useMedicalReportManager = () => {
     const newWindow = window.open('', '_blank');
     if (newWindow) {
       newWindow.document.write(`
-        <html>
-          <head>
-            <title>Extracted Text - ${filename}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-              pre { white-space: pre-wrap; word-wrap: break-word; }
-            </style>
-          </head>
-          <body>
-            <h1>Extracted Text from: ${filename}</h1>
-            <pre>${text}</pre>
-          </body>
-        </html>
+        <html><head><title>Extracted Text - ${filename}</title><style>body { font-family: Arial; padding: 20px; line-height: 1.6; } pre { white-space: pre-wrap; word-wrap: break-word; }</style></head><body><h1>Extracted Text from: ${filename}</h1><pre>${text}</pre></body></html>
       `);
     }
   };
