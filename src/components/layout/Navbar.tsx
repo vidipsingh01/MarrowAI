@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUI } from '@/context/UIContext';
+import Image from 'next/image';
+import marrowai_logo from '../../../public/marrowai_logo.jpeg';
 
 export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -85,7 +87,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gray-300 rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-lg">M</span>
+                <Image src={marrowai_logo} alt="Marrow AI" width={500} height={300} className='rounded-lg'/>
               </div>
               <span className="text-xl font-bold text-gray-900">MarrowAI</span>
             </Link>
@@ -99,7 +101,7 @@ export default function Navbar() {
               <input
                 type="text"
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-medical-500 focus:border-medical-500 sm:text-sm"
-                placeholder="Search reports, symptoms..."
+                placeholder="Search Features..."
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
