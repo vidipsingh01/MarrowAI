@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -12,6 +11,7 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  MessageCircle, 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUI } from '@/context/UIContext';
@@ -47,6 +47,12 @@ const navigationItems = [
     icon: FileText,
     description: 'View all medical reports',
   },
+  {
+    name: 'Connect', 
+    href: '/connect',
+    icon: MessageCircle,
+    description: 'Connect with doctors',
+  },
 ];
 
 const secondaryItems = [
@@ -63,7 +69,6 @@ export default function Sidebar() {
   const { searchTerm } = useUI();
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
-  // Handle clicks outside the sidebar on all screens
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -81,9 +86,9 @@ export default function Sidebar() {
     };
   }, [collapsed]);
 
-  // Memoize filtered items to avoid re-calculating on every render
   const filteredNavigationItems = useMemo(() => {
     if (!searchTerm) return navigationItems;
+
     const lowerCaseSearch = searchTerm.toLowerCase();
     return navigationItems.filter(
       (item) =>
@@ -94,6 +99,7 @@ export default function Sidebar() {
 
   const filteredSecondaryItems = useMemo(() => {
     if (!searchTerm) return secondaryItems;
+
     const lowerCaseSearch = searchTerm.toLowerCase();
     return secondaryItems.filter((item) =>
       item.name.toLowerCase().includes(lowerCaseSearch)
@@ -171,6 +177,7 @@ export default function Sidebar() {
           )}
         </nav>
 
+        {/* Bottom Secondary Links */}
         <div className="border-t border-gray-200 p-2 space-y-1">
           {filteredSecondaryItems.map((item) => {
             const isActive = pathname === item.href;
@@ -180,7 +187,7 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={() => !collapsed && setCollapsed(true)} // Collapse on click if open
+                onClick={() => !collapsed && setCollapsed(true)}
                 className={cn(
                   'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                   isActive
