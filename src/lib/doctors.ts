@@ -49,7 +49,7 @@ export const doctors: Doctor[] = [
     designation: "Clinical Hematologist",
     description: "Associated with the Dana-Farber Cancer Institute, Dr. Abel provides expert care for patients with MDS and various myeloproliferative neoplasms.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1537368910025-700350796527?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "20+ years"
   },
   {
@@ -62,7 +62,7 @@ export const doctors: Doctor[] = [
     designation: "Pediatric Hematologist-Oncologist",
     description: "Dr. Agarwal is a specialist at Boston Children's Hospital, focusing on pediatric cases of aplastic anemia and other bone marrow failure syndromes.",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1632333529389-052443a67503?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "15+ years"
   },
   {
@@ -101,7 +101,7 @@ export const doctors: Doctor[] = [
     designation: "Hematology & BMT Specialist",
     description: "Dr. Arana Yi provides comprehensive care at the Mayo Clinic, with deep expertise in bone marrow transplant (BMT), GVHD, and a wide array of blood disorders.",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1631895393122-752250125a0a?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1643297654416-05795d62e39c?q=80&w=853&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "14+ years"
   },
   {
@@ -127,7 +127,7 @@ export const doctors: Doctor[] = [
     designation: "Professor of Medicine",
     description: "At Froedtert & the Medical College of Wisconsin, Dr. Atallah is focused on advancing treatments for AML, MDS, and other related neoplasms.",
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1597589827317-4c6d6e0a90bd?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1612276529731-4b21494e6d71?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "17+ years"
   },
   {
@@ -140,7 +140,7 @@ export const doctors: Doctor[] = [
     designation: "Hematologist-Oncologist",
     description: "Dr. Babushok is a distinguished physician at the Hospital of the University of Pennsylvania specializing in bone marrow failure syndromes.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1581093404229-c85295f153ee?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1681996428751-93e0294fe98d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "12+ years"
   },
   {
@@ -153,7 +153,7 @@ export const doctors: Doctor[] = [
     designation: "Medical Oncologist",
     description: "Practicing at the Mayo Clinic in Jacksonville, Dr. Badar is an expert in treating myeloid malignancies including AML and MDS.",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1627387498767-3474b335697d?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1612349316228-5942a9b489c2?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "11+ years"
   },
   {
@@ -166,7 +166,7 @@ export const doctors: Doctor[] = [
     designation: "Director, Hematologic Malignancies",
     description: "Dr. Baer leads the hematologic malignancies program at the University of Maryland, with a focus on AML, Aplastic Anemia, and MDS.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1594824475317-29bb3c8f2f88?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1659353888906-adb3e0041693?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     experience: "25+ years"
   },
   {
@@ -179,7 +179,7 @@ export const doctors: Doctor[] = [
     designation: "Hematologist",
     description: "Dr. Balasubramanian provides expert care at Karmanos Cancer Institute for a wide range of hematologic disorders.",
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1625484855239-444738469351?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1700041785712-649e859d9909?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTF8fGRvY3RvcnxlbnwwfDB8MHx8fDA%3D",
     experience: "14+ years"
   },
   {
@@ -192,7 +192,7 @@ export const doctors: Doctor[] = [
     designation: "Assistant Clinical Professor",
     description: "At City of Hope, Dr. Ball focuses on treating AML, Aplastic Anemia, and Myelodysplastic Syndromes.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1639149547372-735622a5734a?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1666887360742-974c8fce8e6b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTk0fHxkb2N0b3J8ZW58MHx8MHx8fDA%3D",
     experience: "9+ years"
   },
   {
@@ -205,7 +205,7 @@ export const doctors: Doctor[] = [
     designation: "Hematologist-Oncologist",
     description: "Dr. Baratam specializes in a broad spectrum of blood cancers and disorders at the Medical University of South Carolina.",
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1624720114704-3777c393169a?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGRvY3RvcnxlbnwwfDB8MHx8fDA%3D",
     experience: "8+ years"
   },
   {
@@ -218,7 +218,7 @@ export const doctors: Doctor[] = [
     designation: "Clinical Hematologist",
     description: "Dr. Bat is a key specialist at UT Southwestern, with a dedicated focus on Aplastic Anemia and PNH.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1628191079326-8c658553634e?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZG9jdG9yfGVufDB8MHwwfHx8MA%3D%3D",
     experience: "10+ years"
   },
   {
@@ -244,7 +244,7 @@ export const doctors: Doctor[] = [
     designation: "Professor, Hematology & HCT",
     description: "A leading professor at City of Hope, Dr. Becker is an authority on the treatment of Acute Myeloid Leukemia (AML).",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1628891439209-11c698f9d0c6?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1661766718556-13c2efac1388?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGRvY3RvcnxlbnwwfDB8MHx8fDA%3D",
     experience: "28+ years"
   },
   {
@@ -283,7 +283,7 @@ export const doctors: Doctor[] = [
     designation: "Associate Professor",
     description: "Dr. Bhatt treats a wide array of hematologic malignancies at the University of Nebraska Medical Center.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1618997327092-6688d8b9d2e1?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1661551577028-80cfb8e4d236?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDR8fGRvY3RvcnxlbnwwfDB8MHx8fDA%3D",
     experience: "13+ years"
   },
   {
@@ -296,7 +296,7 @@ export const doctors: Doctor[] = [
     designation: "Professor of Medicine",
     description: "Dr. Blinder is a Professor of Medicine at Washington University, specializing in chronic leukemias and aplastic anemia.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1603399949603-937965799797?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1661551577028-80cfb8e4d236?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDR8fGRvY3RvcnxlbnwwfDB8MHx8fDA%3D",
     experience: "30+ years"
   },
   {
@@ -309,7 +309,7 @@ export const doctors: Doctor[] = [
     designation: "Chief, Pediatric Stem Cell Transplantation",
     description: "Dr. Boelens leads the pediatric stem cell transplantation service at Memorial Sloan Kettering, with a focus on AML and Aplastic Anemia.",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1507099985232-a27641b1f932?w=400&h=400&fit=crop&crop=faces",
+    image: "https://images.unsplash.com/photo-1582895361887-24daa40c8667?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjkyfHxkb2N0b3J8ZW58MHwwfDB8fHww",
     experience: "22+ years"
   },
   {
@@ -361,7 +361,7 @@ export const doctors: Doctor[] = [
     designation: "CLL Specialist",
     description: "At Duke Cancer Center, Dr. Brander is a leading expert in the treatment and research of Chronic Lymphocytic Leukemia (CLL).",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1643663479412-a1e64f9a0c24?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1681842900431-71d2a3a80a33?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzI5fHxkb2N0b3J8ZW58MHwwfDB8fHww",
     experience: "12+ years"
   },
   {
@@ -374,7 +374,7 @@ export const doctors: Doctor[] = [
     designation: "Pediatric Oncologist",
     description: "Dr. Braun specializes in pediatric Acute Myeloid Leukemia (AML) at UCSF, focusing on developing novel therapies.",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1612531386530-97286d97c32d?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1661492071612-98d26885614a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzUzfHxkb2N0b3J8ZW58MHwwfDB8fHww",
     experience: "14+ years"
   },
   {
@@ -387,7 +387,7 @@ export const doctors: Doctor[] = [
     designation: "Director, Division of Hematology",
     description: "Dr. Brodsky is the Director of Hematology at Johns Hopkins and a world-renowned expert in Aplastic Anemia.",
     rating: 5.0,
-    image: "https://images.unsplash.com/photo-1605309605739-4d6d972b3a2a?w=400&h=400&fit=crop&crop=faces",
+    image: "https://plus.unsplash.com/premium_photo-1681995318495-bbc49e7c3487?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDA5fHxkb2N0b3J8ZW58MHwwfDB8fHww",
     experience: "30+ years"
   }
 ];

@@ -120,14 +120,6 @@ const ConnectClientPage: React.FC<{ doctors: Doctor[] }> = ({ doctors }) => {
                     <MapPin className="w-5 h-5 text-gray-400" /> <span>{doctor.location}</span>
                   </div>
                 </div>
-                <div className="mt-6 flex gap-3">
-                  <button className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm">
-                    Request Appointment
-                  </button>
-                  <button className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-sm">
-                    View Profile
-                  </button>
-                </div>
               </div>
             </div>
           ))}
