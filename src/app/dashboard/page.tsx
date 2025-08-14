@@ -8,9 +8,6 @@ import {
   TrendingUp,
   Activity,
   FileText,
-  Clock,
-  Users,
-  Calendar,
   Download,
   Eye
 } from 'lucide-react';
@@ -18,18 +15,19 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Progress from '@/components/ui/Progress';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { mockDashboardStats, mockBloodCounts, mockPatient, mockReports, mockRiskAssessment } from '@/lib/mockData';
-import { formatDate, getRiskBadgeColor, formatNumber } from '@/lib/utils';
+import { formatDate, getRiskBadgeColor } from '@/lib/utils';
 import { mockData } from '@/lib/mockData';
 
 export default function DashboardPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
-    const [stats, setStats] = useState(mockDashboardStats);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [stats, setStats] = useState(mockDashboardStats);
   const allAnalyticsData = mockData.analyticsData;
 
   const filteredData = useMemo(() => {
-      const now = new Date();
       let startDate = new Date();
       
       switch (selectedPeriod) {
@@ -42,68 +40,7 @@ export default function DashboardPage() {
       return allAnalyticsData.filter(d => new Date(d.date) >= startDate);
     }, [selectedPeriod, allAnalyticsData]);
 
-  const bloodCountTrendData = mockBloodCounts.map(count => ({
-    date: formatDate(count.date),
-    WBC: count.wbc,
-    RBC: count.rbc,
-    Hemoglobin: count.hemoglobin,
-    Platelets: count.platelets / 10
-  }));
-
-  const riskFactorData = mockRiskAssessment.factors.map(factor => ({
-    name: factor.factor.split(' ').slice(0, 2).join(' '),
-    impact: factor.impact,
-    severity: factor.severity
-  }));
-
-  const getAlertLevel = (count: number) => {
-    if (count >= 3) return { color: 'danger', label: 'Critical' };
-    if (count >= 1) return { color: 'warning', label: 'Attention' };
-    return { color: 'success', label: 'Normal' };
-  };
-
-
-  const alertLevel = getAlertLevel(stats.highRiskAlerts);
-
-  const aggregatedStats = useMemo(() => {
-    if (filteredData.length === 0) {
-      return {
-        avgRiskScore: 0,
-        highRiskDays: 0,
-        totalReports: 0,
-        symptomCount: 0,
-        latestBloodCounts: null,
-      };
-    }
-    
-    const totalScore = filteredData.reduce((sum, d) => sum + d.riskScore, 0);
-    const highRiskDays = filteredData.filter(d => d.riskScore >= 70).length;
-    const totalReports = filteredData.filter(d => d.reportType).length;
-    const symptomCount = filteredData.reduce((sum, d) => sum + d.symptoms.length, 0);
-    const latestEntry = filteredData[filteredData.length - 1];
-
-    return {
-      avgRiskScore: Math.round(totalScore / filteredData.length),
-      highRiskDays,
-      totalReports,
-      symptomCount,
-      latestBloodCounts: latestEntry.bloodCounts,
-    };
-  }, [filteredData]);
-
   // Data for charts
-  const riskTrendData = filteredData.map(d => ({
-    date: formatDate(d.date),
-    'Risk Score': d.riskScore,
-  }));
-
-  const bloodCountComparisonData = aggregatedStats.latestBloodCounts ? [
-    { name: 'WBC', value: aggregatedStats.latestBloodCounts.wbc, normalMin: 4, normalMax: 11, unit: 'x10³/μL' },
-    { name: 'RBC', value: aggregatedStats.latestBloodCounts.rbc, normalMin: 4.5, normalMax: 5.9, unit: 'x10⁶/μL' },
-    { name: 'Hemoglobin', value: aggregatedStats.latestBloodCounts.hemoglobin, normalMin: 12, normalMax: 16, unit: 'g/dL' },
-    { name: 'Platelets', value: aggregatedStats.latestBloodCounts.platelets / 100, normalMin: 150, normalMax: 450, unit: 'x10³/μL' },
-  ] : [];
-
   const symptomFrequencyMap = filteredData.reduce((acc, d) => {
     d.symptoms.forEach(s => {
       acc.set(s, (acc.get(s) || 0) + 1);
@@ -124,7 +61,6 @@ export default function DashboardPage() {
   const reportTypeDistributionData = Array.from(reportTypeDistributionMap.entries())
     .map(([name, value]) => ({ name, value, color: getColorForReportType(name) }));
 
-  const COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6'];
   function getColorForReportType(type: string): string {
     switch(type) {
       case 'blood_test': return '#ef4444'; // red

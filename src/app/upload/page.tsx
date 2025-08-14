@@ -1,84 +1,9 @@
-// src/app/upload/page.tsx - Fixed uploadDate handling
 'use client';
-import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { MedicalReportService, MedicalReport } from '@/lib/firestore-client';
-import {
-  Upload,
-  FileText,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Clock,
-  Brain,
-  Eye,
-  Trash2,
-  Search,
-  Filter
-} from 'lucide-react';
-
-// Dummy components (replace with your actual UI components)
-const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => 
-  <div className={`bg-white shadow-md rounded-lg ${className}`}>{children}</div>;
-
-const Button = ({ children, variant, className, ...props }: { 
-  children: React.ReactNode, variant?: string, className?: string, [key: string]: any 
-}) => 
-  <button className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${className}`} {...props}>
-    {children}
-  </button>;
-
-const Input = ({ className, ...props }: { className?: string, [key: string]: any }) =>
-  <input className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props} />;
-
-const Select = ({ children, className, ...props }: { children: React.ReactNode, className?: string, [key: string]: any }) =>
-  <select className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props}>
-    {children}
-  </select>;
-
-const formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`;
-const getFileType = (name: string) => name.split('.').pop()?.toUpperCase() || '';
-
-// Helper function to safely format dates
-const formatUploadDate = (uploadDate: any): string => {
-  try {
-    // If it's already a Date object
-    if (uploadDate instanceof Date) {
-      return uploadDate.toLocaleDateString();
-    }
-    
-    // If it's a Firestore Timestamp with toDate method
-    if (uploadDate && typeof uploadDate.toDate === 'function') {
-      return uploadDate.toDate().toLocaleDateString();
-    }
-    
-    // If it's a Firestore Timestamp with seconds property
-    if (uploadDate && typeof uploadDate.seconds === 'number') {
-      return new Date(uploadDate.seconds * 1000).toLocaleDateString();
-    }
-    
-    // If it's a string that can be parsed as a date
-    if (typeof uploadDate === 'string') {
-      const date = new Date(uploadDate);
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString();
-      }
-    }
-    
-    // If it's a number (timestamp)
-    if (typeof uploadDate === 'number') {
-      return new Date(uploadDate).toLocaleDateString();
-    }
-    
-    // Fallback
-    return 'Unknown date';
-  } catch (error) {
-    console.error('Error formatting upload date:', error, uploadDate);
-    return 'Invalid date';
-  }
-};
+import { Upload, FileText, X, CheckCircle, AlertCircle, Clock, Brain, Eye, Trash2, Search } from 'lucide-react';
+import { useMedicalReportManager } from './hooks/useMedicalReportManager';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+import { useState } from 'react';
 
 interface UploadedFile {
   id: string;
@@ -91,240 +16,88 @@ interface UploadedFile {
   notes?: string;
 }
 
-const REPORT_TYPES = [
-  { value: 'blood-test', label: 'Blood Test' },
-  { value: 'x-ray', label: 'X-Ray' },
-  { value: 'mri', label: 'MRI' },
-  { value: 'ct-scan', label: 'CT Scan' },
-  { value: 'ultrasound', label: 'Ultrasound' },
-  { value: 'prescription', label: 'Prescription' },
-  { value: 'discharge-summary', label: 'Discharge Summary' },
-  { value: 'lab-report', label: 'Lab Report' },
-  { value: 'consultation', label: 'Consultation Notes' },
-  { value: 'general', label: 'General Report' }
-];
+// Dummy components (replace with your actual UI components)
+const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => 
+  <div className={`bg-white shadow-md rounded-lg ${className}`}>{children}</div>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Button = ({ children, variant, className, ...props }: { 
+  children: React.ReactNode, variant?: string, className?: string, [key: string]: unknown 
+}) => 
+  <button className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${className}`} {...props}>
+    {children}
+  </button>;
+const Input = ({ className, ...props }: { className?: string, [key: string]: unknown }) =>
+  <input className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props} />;
+const Select = ({ children, className, ...props }: { children: React.ReactNode, className?: string, [key: string]: unknown }) =>
+  <select className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`} {...props}>
+    {children}
+  </select>;
 
 export default function UploadPage() {
-  const [user, loading, error] = useAuthState(auth);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [savedReports, setSavedReports] = useState<MedicalReport[]>([]);
-  const [reportType, setReportType] = useState('general');
-  const [notes, setNotes] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoadingReports, setIsLoadingReports] = useState(false);
-
-  // Load saved reports when component mounts
-  useEffect(() => {
-    if (user) {
-      loadSavedReports();
-    }
-  }, [user]);
-
-  const loadSavedReports = async () => {
-    if (!user) return;
-    
-    setIsLoadingReports(true);
-    try {
-      const reports = await MedicalReportService.getUserMedicalReports(user.uid);
-      setSavedReports(reports);
-    } catch (error) {
-      console.error('Failed to load saved reports:', error);
-    } finally {
-      setIsLoadingReports(false);
-    }
-  };
-
-  const processFile = async (uploadedFile: UploadedFile) => {
-    if (!user) {
-      setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id ? { 
-            ...f, 
-            status: 'error', 
-            error: 'Please log in to upload files' 
-          } : f
-        )
-      );
-      return;
-    }
-
-    console.log(`Starting to process file: ${uploadedFile.file.name}`);
-    
-    setUploadedFiles(prev =>
-      prev.map(f =>
-        f.id === uploadedFile.id ? { ...f, status: 'uploading' } : f
-      )
-    );
-
-    const formData = new FormData();
-    formData.append('pdf', uploadedFile.file);
-    formData.append('userId', user.uid);
-    formData.append('reportType', uploadedFile.reportType || reportType);
-    if (uploadedFile.notes || notes) {
-      formData.append('notes', uploadedFile.notes || notes);
-    }
-
-    try {
-      console.log('Sending request to API...');
-      const response = await fetch('/api/parse-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      console.log('Response received, status:', response.status);
-      
-      setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id ? { ...f, status: 'processing' } : f
-        )
-      );
-
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-      }
-
-      // Display extracted text in console
-      console.log(`--- Extracted text for ${uploadedFile.file.name} ---`);
-      console.log(data.text);
-      console.log(`--- End of extracted text (${data.info?.textLength} characters) ---`);
-
-      setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id ? { 
-            ...f, 
-            status: 'completed',
-            extractedText: data.text,
-            reportId: data.reportId
-          } : f
-        )
-      );
-
-      // Reload saved reports to include the new one
-      await loadSavedReports();
-      
-      // Clear form
-      setNotes('');
-
-    } catch (error: any) {
-      console.error('Upload failed:', error);
-      setUploadedFiles(prev =>
-        prev.map(f =>
-          f.id === uploadedFile.id
-            ? { ...f, status: 'error', error: error.message }
-            : f
-        )
-      );
-    }
-  };
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log('Files dropped:', acceptedFiles);
-    
-    const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      status: 'pending',
-      reportType: reportType,
-      notes: notes
-    }));
-
-    setUploadedFiles(prev => [...prev, ...newFiles]);
-
-    newFiles.forEach(file => {
-      if (file.file.type === 'application/pdf') {
-        processFile(file);
-      } else {
-        console.error(`Invalid file type: ${file.file.type}`);
-        setUploadedFiles(prev =>
-          prev.map(f =>
-            f.id === file.id ? { 
-              ...f, 
-              status: 'error', 
-              error: `Invalid file type: ${file.file.type}. Only PDF files are supported.` 
-            } : f
-          )
-        );
-      }
-    });
-  }, [reportType, notes, user]);
+  const {
+    user,
+    loading,
+    error,
+    uploadedFiles,
+    savedReports,
+    reportType,
+    notes,
+    searchTerm,
+    isLoadingReports,
+    setReportType,
+    setNotes,
+    setSearchTerm,
+    onDrop,
+    removeFile,
+    deleteReport,
+    searchReports,
+    viewExtractedText,
+    formatFileSize,
+    getFileType,
+    REPORT_TYPES,
+  } = useMedicalReportManager();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     maxSize: 50 * 1024 * 1024,
-    disabled: !user
+    disabled: !user || uploadedFiles.length >= 1,
   });
 
-  const removeFile = (id: string) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== id));
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null);
+
+  const handleDelete = (reportId: string) => {
+    setReportToDelete(reportId);
+    setDeleteModalOpen(true);
   };
 
-  const deleteReport = async (reportId: string) => {
-    if (!confirm('Are you sure you want to delete this report?')) return;
-    
-    try {
-      await MedicalReportService.deleteMedicalReport(reportId);
-      await loadSavedReports();
-    } catch (error) {
-      console.error('Failed to delete report:', error);
-      alert('Failed to delete report');
+  const confirmDelete = async () => {
+    if (reportToDelete) {
+      await deleteReport(reportToDelete);
     }
-  };
-
-  const searchReports = async () => {
-    if (!user || !searchTerm.trim()) {
-      await loadSavedReports();
-      return;
-    }
-    
-    setIsLoadingReports(true);
-    try {
-      const results = await MedicalReportService.searchReports(user.uid, searchTerm);
-      setSavedReports(results);
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setIsLoadingReports(false);
-    }
-  };
-
-  const getStatusIcon = (status: UploadedFile['status']) => {
-    switch (status) {
-      case 'pending': return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'uploading': return <Clock className="h-4 w-4 text-yellow-600 animate-spin" />;
-      case 'processing': return <Brain className="h-4 w-4 text-blue-600 animate-pulse" />;
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-600" />;
-    }
-  };
-
-  const viewExtractedText = (text: string, filename: string) => {
-    const newWindow = window.open('', '_blank');
-    if (newWindow) {
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>Extracted Text - ${filename}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-              pre { white-space: pre-wrap; word-wrap: break-word; }
-            </style>
-          </head>
-          <body>
-            <h1>Extracted Text from: ${filename}</h1>
-            <pre>${text}</pre>
-          </body>
-        </html>
-      `);
-    }
+    setDeleteModalOpen(false);
+    setReportToDelete(null);
   };
 
   if (loading) return <div className="p-8 text-center">Loading...</div>;
   if (error) return <div className="p-8 text-center text-red-600">Error: {error.message}</div>;
   if (!user) return <div className="p-8 text-center">Please log in to upload medical reports.</div>;
+
+  const getStatusIcon = (status: UploadedFile['status']) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'uploading':
+        return <Clock className="h-4 w-4 text-yellow-600 animate-spin" />;
+      case 'processing':
+        return <Brain className="h-4 w-4 text-blue-600 animate-pulse" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-600" />;
+    }
+  };
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
@@ -362,7 +135,7 @@ export default function UploadPage() {
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
-          } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+          } ${(!user || savedReports.length >= 1 || uploadedFiles.length >= 1) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <input {...getInputProps()} />
           <Upload className="h-12 w-12 mx-auto text-gray-400" />
@@ -370,7 +143,10 @@ export default function UploadPage() {
             {isDragActive ? 'Drop PDF files here' : 'Drag & drop PDF files here, or click to select'}
           </p>
           <p className="text-sm text-gray-500 mt-1">Maximum file size: 50MB</p>
-        </div>
+          {(savedReports.length >= 1 || uploadedFiles.length >= 1) && (
+            <p className="text-sm text-red-600 mt-2">Limit reached: Only one file can be uploaded at a time.</p>
+          )}
+</div>
       </Card>
 
       {/* Recent Uploads */}
@@ -396,29 +172,29 @@ export default function UploadPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     {uploadedFile.status === 'completed' && uploadedFile.extractedText && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => viewExtractedText(uploadedFile.extractedText!, uploadedFile.file.name)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View Text
                       </Button>
                     )}
-                    <button 
-                      onClick={() => removeFile(uploadedFile.id)} 
+                    <button
+                      onClick={() => removeFile(uploadedFile.id)}
                       className="text-gray-400 hover:text-red-600 transition-colors"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
-                
+
                 {uploadedFile.status === 'error' && uploadedFile.error && (
                   <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
                     <p className="text-sm text-red-600">{uploadedFile.error}</p>
                   </div>
                 )}
-                
+
                 {uploadedFile.status === 'completed' && uploadedFile.extractedText && (
                   <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
                     <p className="text-sm text-green-600">
@@ -434,24 +210,19 @@ export default function UploadPage() {
 
       {/* Saved Reports */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between space-x-2">
           <h3 className="text-lg font-semibold">Your Medical Reports ({savedReports.length})</h3>
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2">
-              <Input
-                type="text"
-                placeholder="Search reports..."
-                value={searchTerm}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                className="w-64"
-                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && searchReports()}
-              />
-              <Button onClick={searchReports} className="px-3">
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button onClick={loadSavedReports} variant="outline" className="px-3">
-              <Filter className="h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Search reports..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="w-64"
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && searchReports()}
+            />
+            <Button onClick={searchReports} className="px-3 py-1">
+              <Search className="h-6 w-4" />
             </Button>
           </div>
         </div>
@@ -470,7 +241,7 @@ export default function UploadPage() {
         ) : (
           <div className="space-y-4">
             {savedReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={report.id} className="border rounded-lg p-4 mt-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4 flex-1">
                     <FileText className="h-6 w-6 text-blue-600 mt-1" />
@@ -488,23 +259,19 @@ export default function UploadPage() {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="text-sm text-gray-500 mb-2">
-                        <span>Uploaded: {formatUploadDate(report.uploadDate)}</span>
-                        <span className="mx-2">•</span>
                         <span>{formatFileSize(report.fileSize)}</span>
                         <span className="mx-2">•</span>
                         <span>{report.pdfInfo.numPages} pages</span>
                         <span className="mx-2">•</span>
                         <span>{report.textLength.toLocaleString()} characters</span>
                       </div>
-
                       {report.notes && (
                         <div className="text-sm text-gray-600 mb-2 italic">
                           Notes: {report.notes}
                         </div>
                       )}
-
                       {report.aiInsights && (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                           <h4 className="font-medium text-blue-900 mb-2">AI Insights</h4>
@@ -533,26 +300,19 @@ export default function UploadPage() {
                           )}
                         </div>
                       )}
-
                       <div className="text-xs text-gray-400 mt-2 max-h-16 overflow-hidden">
                         <strong>Preview:</strong> {report.extractedText.substring(0, 150)}
                         {report.extractedText.length > 150 && '...'}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button 
-                      variant="outline" 
-                      className="px-3"
-                      onClick={() => viewExtractedText(report.extractedText, report.fileName)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <button 
-                      onClick={() => report.id && deleteReport(report.id)} 
-                      className="text-gray-400 hover:text-red-600 transition-colors p-2"
+                    <button
+                      onClick={() => report.id && handleDelete(report.id)}
+                      className="text-gray-400 hover:text-white hover:bg-red-600 transition-colors p-2 rounded-lg"
                       title="Delete report"
+                      disabled={!report.id}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -563,6 +323,16 @@ export default function UploadPage() {
           </div>
         )}
       </Card>
+      
+      <div>
+        <ConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={confirmDelete}
+          title="Confirm Deletion"
+          message="Are you sure you want to delete this report? This action cannot be undone."
+        />
+      </div>
     </div>
   );
 }

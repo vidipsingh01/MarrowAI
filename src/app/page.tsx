@@ -8,17 +8,14 @@ import {
   Activity,
   FileText,
   AlertTriangle,
-  TrendingUp,
-  Clock,
   Upload,
   Search,
-  Brain,
-  BarChart3,
+  LayoutDashboard,
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { mockDashboardStats, mockBloodCounts } from '@/lib/mockData';
-import { formatDate, getRiskBadgeColor } from '@/lib/utils';
+import { mockDashboardStats } from '@/lib/mockData';
+import { formatDate } from '@/lib/utils';
 // Correctly import the types from your types file
 import type { DashboardStats, BloodCount, TimelineEvent } from '@/lib/types';
 
@@ -33,6 +30,7 @@ interface QuickAction {
 
 export default function HomePage(): JSX.Element {
   // Use the DashboardStats type for the state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stats, setStats] = useState<DashboardStats>(mockDashboardStats);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -47,8 +45,8 @@ export default function HomePage(): JSX.Element {
   const quickActions: QuickAction[] = [
     { title: 'Upload Report', description: 'Upload CBC, biopsy, or imaging files', icon: Upload, href: '/upload', color: 'bg-primary' },
     { title: 'Symptom Check', description: 'Check symptoms and get risk assessment', icon: Search, href: '/symptoms', color: 'bg-warning' },
-    { title: 'AI Analysis', description: 'Get AI-powered risk stratification', icon: Brain, href: '/risk-assessment', color: 'bg-accent' },
-    { title: 'View Analytics', description: 'Explore trends and visualizations', icon: BarChart3, href: '/analytics', color: 'bg-success' },
+    { title: 'Dashboard', description: 'View your health overview and insights', icon: LayoutDashboard, href: '/dashboard', color: 'bg-accent' },
+    { title: 'Reports', description: 'Access and review your medical reports', icon: FileText, href: '/reports', color: 'bg-success' },
   ];
 
   // No longer needed, as we will use stats.bloodCountTrends directly
@@ -92,45 +90,6 @@ export default function HomePage(): JSX.Element {
                 </div>
               </div>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-full bg-primary/10"><FileText className="h-6 w-6 text-primary" /></div>
-                  <div className="ml-4">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Reports</p>
-                    <p className="text-3xl font-bold text-foreground">{stats.totalReports}</p>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-full bg-warning/10"><Clock className="h-6 w-6 text-warning" /></div>
-                  <div className="ml-4">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pending Analysis</p>
-                    <p className="text-3xl font-bold text-foreground">{stats.pendingAnalysis}</p>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-full bg-destructive/10"><AlertTriangle className="h-6 w-6 text-destructive" /></div>
-                  <div className="ml-4">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">High Risk</p>
-                    <p className="text-3xl font-bold text-destructive">{stats.highRiskAlerts}</p>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-6 border border-transparent hover:border-muted hover:shadow-md transition-all">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-full bg-success/10"><TrendingUp className="h-6 w-6 text-success" /></div>
-                  <div className="ml-4">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Last Update</p>
-                    <p className="text-lg font-bold text-foreground">{formatDate(stats.lastUpdate)}</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
 
             <div>
               <h2 className="text-3xl font-bold mb-2 text-center">Quick Actions</h2>
@@ -204,7 +163,7 @@ export default function HomePage(): JSX.Element {
                    Understanding Your Health
                  </h3>
                  <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                   Aplastic anemia is a condition where your bone marrow doesn't make enough new blood cells. Early detection is crucial. Use our tools to track your health, but always consult a professional.
+                   Aplastic anemia is a condition where your bone marrow doesn&apos;t make enough new blood cells. Early detection is crucial. Use our tools to track your health, but always consult a professional.
                  </p>
                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
                    <Link href="/symptoms" className="inline-flex items-center justify-center px-6 py-3 border border-primary text-base font-bold rounded-md text-primary bg-card hover:bg-primary/10 transition-colors">

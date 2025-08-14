@@ -1,21 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import {
-  HelpCircle,
-  Phone,
-  Mail,
   ChevronDown,
   ChevronUp,
-  BookOpen,
-  MessageCircle,
-  FileText,
-  ChevronRight,
-  Shield
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 
 const faqs = [
   {

@@ -1,23 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, TrendingUp, Brain, Calendar, Download } from 'lucide-react';
+import { Calendar, Download } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import Progress from '@/components/ui/Progress';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { mockRiskAssessment, mockBloodCounts } from '@/lib/mockData';
-import { getRiskBadgeColor, formatDate } from '@/lib/utils';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 export default function RiskAssessmentPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTimeframe, setSelectedTimeframe] = useState('current');
 
-  const riskFactorData = mockRiskAssessment.factors.map(factor => ({
-    name: factor.factor.replace(' ', '\n'),
-    impact: factor.impact,
-    severity: factor.severity
-  }));
 
   const riskDistribution = [
     { name: 'High Risk Factors', value: 65, color: '#ef4444' },
@@ -25,10 +17,6 @@ export default function RiskAssessmentPage() {
     { name: 'Low Risk Factors', value: 13, color: '#22c55e' }
   ];
 
-  const trendData = mockBloodCounts.map((count, index) => ({
-    date: formatDate(count.date),
-    riskScore: Math.max(20, 90 - (index * 5) + Math.random() * 10)
-  }));
 
   return (
     <div className="space-y-8 animate-fade-in">

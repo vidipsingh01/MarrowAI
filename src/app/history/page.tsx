@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, FileText, Activity, Clock, Filter, Search } from 'lucide-react';
+import { Calendar, FileText, Activity, Clock } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -80,7 +80,7 @@ export default function HistoryPage() {
       <div className="relative">
         <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
         <div className="space-y-8">
-          {filteredEvents.map((event, index) => {
+          {filteredEvents.map((event) => {
             const IconComponent = getEventIcon(event.type);
             return (
               <div key={event.id} className="relative flex items-start space-x-6">
