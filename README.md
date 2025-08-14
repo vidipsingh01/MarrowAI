@@ -144,7 +144,7 @@ In healthcare, patients often receive **dense, technical medical reports** that 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/marrowai.git
+git clone https://github.com/yourusername/MarrowAI.git
 cd marrowai
 
 # Install dependencies
